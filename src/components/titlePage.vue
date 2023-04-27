@@ -14,7 +14,10 @@
           <span class="description">Нарисуй форму, выбери раму, цвет и крепление. А мы приедем и установим его в удобное время</span>&nbsp;
         </div>
         <div class="second-row">
-          <button class="button">СОЗДАТЬ</button>
+          
+          <router-link to="/draw">
+            <button class="button">СОЗДАТЬ</button>
+          </router-link>
         </div>
       </div>
     </div>
@@ -24,6 +27,10 @@
 <script>
 export default {
   name: 'TitlePage',
+  methods: {
+    goDraw(){
+    }
+  }
 }
 </script>
 
@@ -44,11 +51,11 @@ export default {
   color: #231f20;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   height: 100%;
   width: 700px;
   margin-left: auto;
   margin-right: auto;
+  padding-top: 45px;
 }
 .second-row{
   display: flex;
@@ -76,9 +83,8 @@ export default {
   background-size: cover;
 }
 .first-word{
-  font-family: 'Kelly Slab', cursive;
-  font-weight: normal;
-  font-size: 22px;
+  font-family: 'Poiret One';
+  font-size: 32px;
   line-height: 1.3em;
 }
 .second-word{
@@ -89,24 +95,67 @@ export default {
   font-size: 38px;
 }
 .description{
-  margin-top: 10px;
+  margin-top: 25px;
+  margin-bottom: 25px;
   max-width: 400px;
   font-size: 19px;
   line-height: 1.4em;
 }
-@media (max-width: 720px) {
+@media (max-width: 768px) {
+  .first-word{
+    font-size: 23px;
+  }
   .video-container {
     height: 70vh;
   }
   .title_container {
-    width: 100%;
+    width: 90%;
   }
   .description{
     width: 100%;
     display: flex;
+    margin-top: 15px;
+    margin-bottom: 15px;
   }
-  .second-row{
-    display: block;
+  .second-word{
+    font-size: 23px;
+    line-height: 1.2em;
+  }
+  .third-word{
+    font-size: 23px;
+    line-height: 1.2em;
+  }
+  .description{
+    font-size: 15px;
+    margin-top: 0px;
+  }
+}
+@media (max-width: 412px) {
+  .first-word{
+    font-size: 16px;
+  }
+  .second-word{
+    font-size: 16px;
+  }
+  .third-word{
+    font-size: 16px;
+  }
+  .description{
+    font-size: 12px;
+  }
+}
+@media (max-width: 280px) {
+  .first-word{
+    font-size: 12px;
+  }
+  .second-word{
+    font-size: 12px;
+  }
+  .third-word{
+    font-size: 12px;
+  }
+  .description{
+    font-size: 12px;
   }
 }
 </style>
