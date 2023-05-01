@@ -1,19 +1,46 @@
 <!--console.log('%c Oh my heavens! ', 'background: #222; color: #bada55');-->
 <template>
-  {{clear}}{{simpValue}}
-  <button @click="getCanvas">getCanvas</button>
+  <div style="margin-top: 15px; margin-bottom: 15px;">
+    <el-button @click="clearPaper">
+      <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+        <Delete />
+      </el-icon>
+      очистить</el-button>
+    <el-button @click="back">
+      <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+        <Undo />
+      </el-icon>
+      назад
+    </el-button>
+    <el-button @click="forward">
+      <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+        <Redo />
+      </el-icon>
+      вперёд
+    </el-button>
+    <el-button @click="changeScale">
+      <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+        <ArrowExpand />
+      </el-icon>
+      scale</el-button>
+  </div>
   <div>
     <canvas :id="canvasId" class="canvas-style" v-on:mousedown="mouseDown"
     />
   </div>
-  <canvas id="canvas2" class="canvas-style"></canvas>
 </template>
 
 <script>
-
+import Undo from 'vue-material-design-icons/Undo.vue';
+import Redo from 'vue-material-design-icons/Redo.vue';
+import Delete from 'vue-material-design-icons/Delete.vue';
+import ArrowExpand from 'vue-material-design-icons/ArrowExpand.vue';
 const paper = require('paper');
 export default {
   name: "CanvasPaper",
+  components: {
+    Undo, Redo, Delete, ArrowExpand
+  },
   props: {
     simpValue: Number,
     canvasId:String,
@@ -21,6 +48,10 @@ export default {
     dragMode: Boolean,
   },
   data: () => ({
+
+    simpArr: null,
+    pathHistory: [],
+    currentIndex: 0,
 
     pathExtra:null,
 
@@ -50,6 +81,83 @@ export default {
     finishArr: []
   }),
   methods: {
+    changeScale(){
+      console.log(this.scope.project._children[0]._children[0])
+      let topLeft = this.scope.project._children[0]._children[0].bounds
+
+      // var shape19 = new paper.Shape.Circle(new paper.Point(center.x,center.y), 10);
+      // shape19.strokeColor = 'rgba(0,38,32,0.5)';
+      // shape19.fillColor = 'rgba(0,255,217,0.2)';
+
+      var rectangle = new paper.Rectangle(new paper.Point(topLeft.topLeft.x, topLeft.topLeft.y), new paper.Size(topLeft.width, topLeft.height));
+      var path = new paper.Path.Rectangle(rectangle);
+      path.strokeColor = 'black';
+      path.dashArray = [10, 12];
+
+          //this.scope.project._children[0]._children[0].scale(.3, 1);
+    },
+    forward(){
+      if(this.currentIndex<this.pathHistory.length-1){
+        this.currentIndex++
+        if(this.pathHistory[this.currentIndex] && this.pathHistory[this.currentIndex].simplify){
+          this.forward()
+        } else {
+          this.$emit('clearSimp')
+          self.path = new paper.Path(this.pathHistory[this.currentIndex].data)
+          self.path.strokeColor = 'black';
+          self.path.fillColor = 'red';
+          self.path.closed = true;
+        }
+      }
+    },
+    drawCircles(){
+      let path = this.scope.project._children[0]._children[0]
+      console.log(path)
+      if(path._segments){
+        for(let i=0 ; i<path._segments.length ; i++){
+          var shape19 = new paper.Shape.Circle(new paper.Point(path._segments[i].point.x,path._segments[i].point.y), 10);
+          shape19.strokeColor = 'rgba(0,38,32,0.5)';
+          shape19.fillColor = 'rgba(0,255,217,0.2)';
+        }
+      }
+    },
+    clearPaper(event){
+      if(event){
+        event.target.blur()
+        if(event.target.nodeName == "SPAN") {
+          event.target.parentNode.blur();
+        }
+      }
+      this.simpArr= null
+      this.pathHistory= []
+      this.currentIndex= 0
+      this.$emit('clearHandler')
+    },
+    back(event){
+      if(event){
+        event.target.blur()
+        if(event.target.nodeName == "SPAN") {
+          event.target.parentNode.blur();
+        }
+      }
+      if(this.currentIndex>0){
+        this.currentIndex--
+        if(this.pathHistory[this.currentIndex-1] && this.pathHistory[this.currentIndex-1].simplify){
+          this.back()
+        } else {
+          let self = this;
+          this.$emit('clearSimp')
+          self.path = new paper.Path(this.pathHistory[this.currentIndex].data)
+          self.path.strokeColor = 'black';
+          self.path.fillColor = 'red';
+          //self.path.simplify(1);
+          self.path.closed = true;
+          if(this.simpValue>0){
+            //self.path.simplify(this.simpValue);
+          }
+        }
+      }
+    },
     cutCrossings(readyPointsGo){
 
       let routNumbers=[]
@@ -185,39 +293,6 @@ export default {
       }
       return index
     },
-    getCanvas() {
-      const canvas = document.getElementById("canvas-one");
-      const ctx = canvas.getContext("2d")
-      let canvArr = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data
-
-      const canvas2 = document.getElementById("canvas2");
-      canvas2.width = canvas.width;
-      canvas2.height = canvas.height;
-      let ctx2 = canvas2.getContext('2d');
-      ctx2.drawImage(canvas, 0, 0)
-
-      var c = document.getElementById("canvas2");
-      var ctx7 = c.getContext("2d");
-      var imgData = ctx.createImageData(ctx.canvas.width, ctx.canvas.height);
-      var i;
-      for (i = 0; i < imgData.data.length; i += 4) {
-        if (canvArr[i + 1] == 128 && canvArr[i + 3] == 255) {
-          imgData.data[i + 0] = 55;
-          imgData.data[i + 1] = 65;
-          imgData.data[i + 2] = 34;
-          imgData.data[i + 3] = 255;
-        } else {
-          imgData.data[i + 0] = 255;
-          imgData.data[i + 1] = 255;
-          imgData.data[i + 2] = 255;
-          imgData.data[i + 3] = 255;
-        }
-      }
-      ctx7.putImageData(imgData, 0, 0);
-
-      //let canvArr7 = ctx7.getImageData(0, 0, ctx7.canvas.width, ctx7.canvas.height).data
-
-    },
     reset() {
       this.scope.project.activeLayer.removeChildren();
     },
@@ -342,13 +417,14 @@ export default {
             this.crossed = true
           }
         } else {
-          if(this.path2._segments){
-            for(let i=0 ; i<this.path2._segments.length ; i++){
-              var shape19 = new paper.Shape.Circle(new paper.Point(this.path2._segments[i].point.x,this.path2._segments[i].point.y), 10);
-              shape19.strokeColor = 'rgba(0,38,32,0.5)';
-              shape19.fillColor = 'rgba(0,255,217,0.5)';
-            }
-          }
+          // if(this.path2._segments){
+          //   for(let i=0 ; i<this.path2._segments.length ; i++){
+          //     var shape19 = new paper.Shape.Circle(new paper.Point(this.path2._segments[i].point.x,this.path2._segments[i].point.y), 10);
+          //     shape19.strokeColor = 'rgba(0,38,32,0.5)';
+          //     shape19.fillColor = 'rgba(0,255,217,0.2)';
+          //   }
+          // }
+          this.drawCircles()
           if (this.segment) {
 
             this.segment.point.x += event.delta.x;
@@ -363,6 +439,8 @@ export default {
       };
       this.tool.onMouseUp = () => {
         let self = this;
+
+
         if(!this.dragMode) {
           // завершаем линию
           self.path.add(new paper.Point(self.path.curves[0].point1._x, self.path.curves[0].point1._y))
@@ -401,19 +479,59 @@ export default {
           }
           self.path.closed = true;
           self.path.fillColor = { hue: Math.random() * 360, saturation: 1, lightness: (Math.random() - 0.5) * 0.4 + 0.4 };
-          self.path.simplify(2);
 
-          if(self.path._segments){
-            for(let i=0 ; i<self.path._segments.length ; i++){
-              var shape19 = new paper.Shape.Circle(new paper.Point(self.path._segments[i].point.x,self.path._segments[i].point.y), 10);
-              shape19.strokeColor = 'rgba(0,38,32,0.5)';
-              shape19.fillColor = 'rgba(0,255,217,0.5)';
-            }
+
+
+
+          self.path.simplify(0);
+
+
+          this.simpArr=this.scope.project._children[0]._children[0].pathData
+          if(this.currentIndex != this.pathHistory.length-1){
+            this.pathHistory.splice(this.currentIndex+1,Infinity)
           }
+          this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData})
+          this.currentIndex = this.pathHistory.length-1
+          console.log('HISTORY')
+          console.log(this.scope.project._children[0]._children[0])
+
+
+          // let rer = []
+          // if(this.scope.project._children[0]._children[0].curves){
+          //
+          //   for(let i=0 ; i<this.scope.project._children[0]._children[0].curves.length ; i++){
+          //     for(let j=1 ; j<this.scope.project._children[0]._children[0].curves[i].points.length ; j++){
+          //       rer.push({
+          //         x:this.scope.project._children[0]._children[0].curves[i].points[j].x,
+          //         y:this.scope.project._children[0]._children[0].curves[i].points[j].y
+          //       })
+          //     }
+          //   }
+          //
+          //
+          //   for(let i=0;i<rer.length;i++){
+          //     var shape193 = new paper.Shape.Circle(new paper.Point(rer[i].x,rer[i].y), 10);
+          //     shape193.strokeColor = 'rgba(0,0,0,0.5)';
+          //     shape193.fillColor = 'rgba(255,2,2,0.5)';
+          //   }
+          //
+          //
+          // }
+          console.log(this.scope.project._children[0]._children[0])
+          this.drawCircles()
 
 
           this.pathExtra = self.path
 
+        } else {
+          this.simpArr=this.scope.project._children[0]._children[0].pathData
+          if(this.currentIndex != this.pathHistory.length-1){
+            this.pathHistory.splice(this.currentIndex+1,Infinity)
+          }
+          this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData})
+          this.currentIndex = this.pathHistory.length-1
+          console.log('HISTORY')
+          console.log(this.scope.project._children[0]._children[0])
         }
       }
     }
@@ -427,34 +545,40 @@ export default {
       this.currentArr = [];
       this.finishArr = []
     },
-    simpValue(val){
-      console.log(this.pathExtra)
-      console.log(val)
+    simpValue(val, oldVal){
 
-      let self = this;
+      if(this.scope.project._children[0]._children[0]){
+        this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData, simplify:true})
+        this.currentIndex++
+
+        // this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData})
+        // this.currentIndex++
+        console.log(this.pathHistory.length)
 
 
-      if(this.path2){
-        //this.path2.simplify(val);
-
-
-
+        if(!this.simpArr){
+          this.simpArr=this.scope.project._children[0]._children[0].pathData
+          console.log(this.simpArr)
+        }
 
         this.$emit('clearSimp')
-
-        self.path = new paper.Path()
+        console.log(this.simpArr)
+        self.path = new paper.Path(this.simpArr)
         self.path.strokeColor = 'black';
-
-        for (let i = 0; i < this.FinArr.length; i++) {
-          self.path.add(new paper.Point(this.FinArr[i].x, this.FinArr[i].y));
+        self.path.fillColor = 'red';
+        console.log(this.simpArr)
+        if(val>oldVal){
+          self.path.simplify(val);
+        } else {
+          self.path.flatten(40/val);
         }
-        self.path.closed = true;
-        self.path.fillColor = { hue: 0.5 * 360, saturation: 1, lightness: (0.5 - 0.5) * 0.4 + 0.4 };
-        self.path.simplify(val);
+        this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData, simplify:true})
+        this.currentIndex++
 
-      } else {
-        this.path.simplify(val);
+
+        this.drawCircles()
       }
+
     }
   }
 }
@@ -465,10 +589,11 @@ export default {
   cursor: crosshair;
   width: 50% !important;
   height: 500px !important;
-  border: 5px solid black;
   border-radius: 10px;
   display: block;
   margin: auto;
-  box-shadow: 0 10px 8px -8px black;
+  -webkit-box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
+  -moz-box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
+  box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
 }
 </style>

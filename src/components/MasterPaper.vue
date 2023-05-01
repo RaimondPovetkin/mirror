@@ -4,11 +4,12 @@
     <div class="row mt-5">
       <div class="col-5" />
       <div class="col-2">
-        <button class="btn btn-primary btn-block" @click.prevent="clearHandler">CLEAR</button>
+<!--        <button class="btn btn-primary btn-block" @click.prevent="clearHandler">CLEAR</button>-->
+
       </div>
       <div>
         <input type="range" id="volume" name="volume"
-               min="2" max="150" :disabled="canDraw" v-model="simpValue">
+               min="2" max="30" :disabled="canDraw" v-model="simpValue">
         <label for="volume">Volume</label>{{simpValue}}
       </div>
       <div class="col-5"/>
@@ -26,6 +27,7 @@
             @clearSimp="clearSimp"
             :canvas-id="'canvas-one'"
             ref="childCanvas"
+            @clearHandler="clearHandler"
         />
       </div>
       <div class="col-2"/>
