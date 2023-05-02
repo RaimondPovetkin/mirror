@@ -9,7 +9,7 @@
       </div>
       <div>
         <input type="range" id="volume" name="volume"
-               min="2" max="30" :disabled="canDraw" v-model="simpValue">
+               min="2" max="30" :disabled="canDraw || disableRange" v-model="simpValue">
         <label for="volume">Volume</label>{{simpValue}}
       </div>
       <div class="col-5"/>
@@ -24,6 +24,8 @@
             :simpValue="simpValue"
             :dragMode="!canDraw"
             @clearCanvas="reset"
+            @disableRange="disableRange = true"
+            @ableRange="disableRange = false"
             @clearSimp="clearSimp"
             :canvas-id="'canvas-one'"
             ref="childCanvas"
@@ -31,6 +33,9 @@
         />
       </div>
       <div class="col-2"/>
+      <el-button @click="changeIndex">
+        NEXT
+      </el-button>
     </div>
   </div>
 </template>
@@ -40,6 +45,7 @@ import CanvasPaper from "@/components/CanvasPaper";
 export default {
   name: "MasterPaper",
   data: () => ({
+    disableRange: false,
     simpValue: 2,
     canDraw: true,
     buttons: ['Simple', 'Separate', 'Replicated'],
@@ -47,6 +53,9 @@ export default {
     clear: false
   }),
   methods: {
+    changeIndex(){
+      this.$emit('changeIndex',1)
+    },
     reset() {
       this.canDraw = false
       this.$refs.childCanvas.reset();

@@ -24,9 +24,10 @@
       </el-icon>
       scale</el-button>
   </div>
-  <div>
-    <canvas :id="canvasId" class="canvas-style" v-on:mousedown="mouseDown"
-    />
+  <div style="height: 500px !important;">
+    <canvas key=countRerender :width="calcWidth()" :height="calcHeight()" :id="canvasId" class="canvas-style" resize="true" v-on:mousedown="mouseDown"/>
+    <!-- 1162 500    1745 -->
+    <!-- <canvas key=countRerender width="568" height="500" :id="canvasId" class="canvas-style" resize="true" v-on:mousedown="mouseDown"/> 860-->
   </div>
 </template>
 
@@ -48,6 +49,7 @@ export default {
     dragMode: Boolean,
   },
   data: () => ({
+    countRerender:1,
 
     simpArr: null,
     pathHistory: [],
@@ -81,6 +83,13 @@ export default {
     finishArr: []
   }),
   methods: {
+    calcHeight(){
+      return 500
+    },
+    calcWidth(){
+      let num = (document.body.clientWidth / 100) * 34
+      return document.body.clientWidth - num
+    },
     changeScale(){
       console.log(this.scope.project._children[0]._children[0])
       let topLeft = this.scope.project._children[0]._children[0].bounds
@@ -119,6 +128,11 @@ export default {
           shape19.strokeColor = 'rgba(0,38,32,0.5)';
           shape19.fillColor = 'rgba(0,255,217,0.2)';
         }
+      }
+      if(path._segments.length>3){
+        this.$emit('ableRange')
+      } else {
+        this.$emit('disableRange')
       }
     },
     clearPaper(event){
@@ -424,7 +438,7 @@ export default {
           //     shape19.fillColor = 'rgba(0,255,217,0.2)';
           //   }
           // }
-          this.drawCircles()
+          //this.drawCircles()
           if (this.segment) {
 
             this.segment.point.x += event.delta.x;
@@ -518,7 +532,6 @@ export default {
           //
           // }
           console.log(this.scope.project._children[0]._children[0])
-          this.drawCircles()
 
 
           this.pathExtra = self.path
@@ -533,12 +546,14 @@ export default {
           console.log('HISTORY')
           console.log(this.scope.project._children[0]._children[0])
         }
+        this.drawCircles()
       }
     }
   },
   mounted() {
     this.scope = new paper.PaperScope();
     this.scope.setup(this.canvasId);
+    console.log(document.body.clientWidth);
   },
   watch:{
     clear(){
@@ -560,6 +575,7 @@ export default {
           this.simpArr=this.scope.project._children[0]._children[0].pathData
           console.log(this.simpArr)
         }
+        this.simpArr=this.pathHistory[this.pathHistory.length-1].data
 
         this.$emit('clearSimp')
         console.log(this.simpArr)
@@ -568,8 +584,10 @@ export default {
         self.path.fillColor = 'red';
         console.log(this.simpArr)
         if(val>oldVal){
+          //self.path.flatten(1);
           self.path.simplify(val);
         } else {
+          self.path.simplify();
           self.path.flatten(40/val);
         }
         this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData, simplify:true})
@@ -586,14 +604,17 @@ export default {
 
 <style scoped>
 .canvas-style {
+  height: 350px;
   cursor: crosshair;
-  width: 50% !important;
-  height: 500px !important;
   border-radius: 10px;
   display: block;
   margin: auto;
   -webkit-box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
   -moz-box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
   box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
+}
+canvas[resize] {
+    width: 80%;
+    height: 100%;
 }
 </style>
