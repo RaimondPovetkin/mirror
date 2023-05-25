@@ -19,6 +19,18 @@
             <button class="button">СОЗДАТЬ</button>
           </router-link>
         </div>
+
+        <transition name="slide-fade">
+          <router-view></router-view>
+        </transition>
+
+
+        <!-- <router-view v-slot="{Component}">
+          <transition name="slide" mode="out-in">
+            <component :is="Component" :key="$route.path"></component>
+          </transition>
+        </router-view> -->
+
       </div>
     </div>
   </div>
@@ -36,6 +48,16 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+.slide-fade-leave-active {
+  transition: all .5s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-fade-enter, .slide-fade-leave-active {
+  padding-left: 10px;
+  opacity: 0;
+}
 .main{
   width: 100vw;
   height: 100vh;

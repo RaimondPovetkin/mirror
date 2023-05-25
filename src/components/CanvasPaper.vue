@@ -1,33 +1,62 @@
 <!--console.log('%c Oh my heavens! ', 'background: #222; color: #bada55');-->
 <template>
   <div style="margin-top: 15px; margin-bottom: 15px;">
-    <el-button @click="clearPaper">
+  </div>
+  <div style=" display: flex; justify-content: center;">
+    <div  style="height: 80%; width: 45%;" >
+    <canvas key=countRerender :width="calcWidth()" :height="calcHeight()" :id="canvasId" class="canvas-style" resize="true" v-on:mousedown="mouseDown"/>
+    <!-- 1162 500    1745 -->
+    <!-- <canvas key=countRerender width="568" height="500" :id="canvasId" class="canvas-style" resize="true" v-on:mousedown="mouseDown"/> 860-->
+  </div>
+  <div class="buttons-block">
+    <div class="buttons-wrap">
+      <el-button @click="clearPaper" class="btn-wrap btn-tool">
       <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
         <Delete />
       </el-icon>
-      очистить</el-button>
-    <el-button @click="back">
+      ОЧИСТИТЬ</el-button>
+    <el-button @click="back" class="btn-wrap btn-tool">
       <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
         <Undo />
       </el-icon>
-      назад
+      НАЗАД
     </el-button>
-    <el-button @click="forward">
+    <el-button @click="forward" class="btn-wrap btn-tool">
       <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
         <Redo />
       </el-icon>
-      вперёд
+      ВПЕРЁД
     </el-button>
-    <el-button @click="changeScale">
+    <el-button @click="changeScale" class="btn-wrap btn-tool">
       <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
         <ArrowExpand />
       </el-icon>
-      scale</el-button>
+      МАСШТАБ
+    </el-button>
+
+      <el-button @click="ttt" class="btn-wrap btn-tool">
+        <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+          <ArrowExpand />
+        </el-icon>
+        ttt
+      </el-button>
+
+    <div style=" display: flex; flex-direction: column;">
+      <label for="volume">СГЛАЖИВАНИЕ</label>
+      <input type="range" id="volume" name="volume" min="2" max="30" :disabled="!dragMode || fewSegments" v-model="simpValue">
+      
+    </div>
+
+    <el-button @click="goToDrawPage">
+        NEXT
+      </el-button>
+    </div>
+
+
+
   </div>
-  <div>
-    <canvas :id="canvasId" class="canvas-style" v-on:mousedown="mouseDown"
-    />
   </div>
+
 </template>
 
 <script>
@@ -42,12 +71,14 @@ export default {
     Undo, Redo, Delete, ArrowExpand
   },
   props: {
-    simpValue: Number,
     canvasId:String,
     clear: Boolean,
     dragMode: Boolean,
+    externalPathCurveCall: Boolean,
   },
+  emits: ['clearCanvas', 'clearSimp', 'clearHandler', 'nextButton'],
   data: () => ({
+    countRerender:1,
 
     simpArr: null,
     pathHistory: [],
@@ -55,6 +86,12 @@ export default {
 
     pathExtra:null,
 
+    scaleMode: false,
+    strokeScaleNumber: null,
+    cornerScale: null,
+
+    simpValue: 2,
+    fewSegments: false,
     segment: null,
     movePath: false,
     path2: null,
@@ -81,22 +118,164 @@ export default {
     finishArr: []
   }),
   methods: {
-    changeScale(){
-      console.log(this.scope.project._children[0]._children[0])
-      let topLeft = this.scope.project._children[0]._children[0].bounds
+    ttt(){
+      //console.log(this.scope.project._children[0]._children[0].segments)
 
-      // var shape19 = new paper.Shape.Circle(new paper.Point(center.x,center.y), 10);
-      // shape19.strokeColor = 'rgba(0,38,32,0.5)';
-      // shape19.fillColor = 'rgba(0,255,217,0.2)';
+      let tty = this.scope.project._children[0]._children[0]
+
+      console.log('=================================')
+
+      for(let i=0;i<tty.segments.length;i++){
+        console.log(tty.segments[i].curve.points)
+      }
+      console.log('=================================')
+      //tty.scale(1.3, 1.3)
+
+      //this.path2.position.y += event.delta.y;
+      console.log('=================================')
+      // this.$emit('setPathCurveExternal',this.scope.project._children[0]._children[0].segments)
+      let arrSeg = this.scope.project._children[0]._children[0].segments
+      let nArr = []
+
+      for(let i=0;i<arrSeg.length;i++){
+        nArr.push(arrSeg[i])
+      }
+      var pathCopy1 = this.scope.project._children[0]._children[0]
+      pathCopy1.flatten(0.5);
+
+      // var pathCopy1 = this.scope.project._children[0]._children[0].clone()
+      // pathCopy1.position = new paper.Point(pathCopy1.position.x +10, pathCopy1.position.y +10);
+      // pathCopy1.name='strokePathSegment'
+      // var pathCopy2 = this.scope.project._children[0]._children[0].clone()
+      // pathCopy2.position = new paper.Point(pathCopy2.position.x -10, pathCopy2.position.y -10);
+      // pathCopy2.name='strokePathSegment'
+      // var pathCopy3 = this.scope.project._children[0]._children[0].clone()
+      // pathCopy3.position = new paper.Point(pathCopy3.position.x, pathCopy3.position.y -20);
+      // pathCopy3.name='strokePathSegment'
+      // var pathCopy4 = this.scope.project._children[0]._children[0].clone()
+      // pathCopy4.position = new paper.Point(pathCopy4.position.x, pathCopy4.position.y +20);
+      // pathCopy4.name='strokePathSegment'
+      // var pathCopy5 = this.scope.project._children[0]._children[0].clone()
+      // pathCopy5.position = new paper.Point(pathCopy5.position.x +20, pathCopy5.position.y);
+      // pathCopy5.name='strokePathSegment'
+      // var pathCopy6 = this.scope.project._children[0]._children[0].clone()
+      // pathCopy6.position = new paper.Point(pathCopy6.position.x -20, pathCopy6.position.y);
+      // pathCopy6.name='strokePathSegment'
+      // var pathCopy7 = this.scope.project._children[0]._children[0].clone()
+      // pathCopy7.position = new paper.Point(pathCopy7.position.x +10, pathCopy7.position.y -10);
+      // pathCopy7.name='strokePathSegment'
+      // var pathCopy8 = this.scope.project._children[0]._children[0].clone()
+      // pathCopy8.position = new paper.Point(pathCopy8.position.x -10, pathCopy8.position.y +10);
+      // pathCopy8.name='strokePathSegment'
+      //
+      // pathCopy1.join(pathCopy2).join(pathCopy3).join(pathCopy4).join(pathCopy5).join(pathCopy6).join(pathCopy7).join(pathCopy8)
+
+
+      //pathCopy1.scale(1.3)
+      //var pathCopy2 = this.scope.project._children[0]._children[0].clone()
+      //pathCopy2.scale(0.77, 1)
+      //
+      //pathCopy1.join(pathCopy2)
+      //pathCopy1.strokeWidth = 20
+
+
+
+      //let nArr = JSON.parse(JSON.stringify(this.scope.project._children[0]._children[0].segments))
+      this.$emit('setPathCurveExternal',pathCopy1.segments)
+      //tty.scale(0.77,0.77)
+
+    },
+    goToDrawPage(){
+      this.scope.project._children[0]._children[0].flatten(1);
+      this.$emit('nextButton',this.scope.project._children[0]._children[0].segments)
+    },
+    toNormalSizeChildren(){
+      //this.scope.project._children[0]._children.find(i=>i.id == hitResult.item.id).radius = 20
+      for(let i=0; i< this.scope.project._children[0]._children.length;i++){
+        if(this.scope.project._children[0]._children[i].type == "circle" && this.scope.project._children[0]._children[i].radius > 5){
+          this.scope.project._children[0]._children[i].radius = 10
+        } else if(!this.scope.project._children[0]._children[i].type){
+          this.scope.project._children[0]._children[0].strokeWidth = 1
+        }
+      }
+    },  
+    deleteScaleRectangle(){
+      var children = this.scope.project.activeLayer.children;
+      if(children['csaleRectangle'] && children['topLeft'] && children['topRight'] && children['bottomLeft'] && children['bottomRight']){
+        children['csaleRectangle'].remove()
+        children['topLeft'].remove()
+        children['topRight'].remove()
+        children['bottomLeft'].remove()
+        children['bottomRight'].remove()
+      }
+    },
+    drawScaleRectangle(){
+
+      let pathGeneral = this.scope.project._children[0]._children[0]
+      let topLeft = pathGeneral.bounds
 
       var rectangle = new paper.Rectangle(new paper.Point(topLeft.topLeft.x, topLeft.topLeft.y), new paper.Size(topLeft.width, topLeft.height));
       var path = new paper.Path.Rectangle(rectangle);
+      path.name = 'csaleRectangle'
       path.strokeColor = 'black';
       path.dashArray = [10, 12];
 
-          //this.scope.project._children[0]._children[0].scale(.3, 1);
+      var topLeftShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y), 5);
+      topLeftShape.name = 'topLeft'
+      topLeftShape.strokeColor = 'rgba(0,38,32,0.5)';
+      topLeftShape.fillColor = 'rgba(0,255,217,0.2)';
+
+      var topRightShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.topRight.x,pathGeneral.bounds.topRight.y), 5);
+      topRightShape.name = 'topRight'
+      topRightShape.strokeColor = 'rgba(0,38,32,0.5)';
+      topRightShape.fillColor = 'rgba(0,255,217,0.2)';
+
+      var bottomLeftShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.bottomLeft.x,pathGeneral.bounds.bottomLeft.y), 5);
+      bottomLeftShape.name = 'bottomLeft'
+      bottomLeftShape.strokeColor = 'rgba(0,38,32,0.5)';
+      bottomLeftShape.fillColor = 'rgba(0,255,217,0.2)';
+
+      var bottomRightShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.bottomRight.x,pathGeneral.bounds.bottomRight.y), 5);
+      bottomRightShape.name = 'bottomRight'
+      bottomRightShape.strokeColor = 'rgba(0,38,32,0.5)';
+      bottomRightShape.fillColor = 'rgba(0,255,217,0.2)';
+    },
+    calcHeight(){
+      return (document.body.clientWidth / 100) * 42
+    },
+    calcWidth(){
+      let num = (document.body.clientWidth / 100) * 64
+      return document.body.clientWidth - num
+    },
+    deletePathCircles(){
+      while(this.scope.project.activeLayer.children['circlePaht']){
+        this.scope.project.activeLayer.children['circlePaht'].remove()
+      }
+    },
+    changeScale(){
+      if(this.scaleMode) {
+        this.scaleMode = false
+        var children = this.scope.project.activeLayer.children;
+        children['csaleRectangle'].remove()
+        children['topLeft'].remove()
+        children['topRight'].remove()
+        children['bottomLeft'].remove()
+        children['bottomRight'].remove()
+        this.drawCircles()
+      } else {
+        this.scaleMode = true
+
+        this.deleteScaleRectangle()
+
+        this.drawScaleRectangle()
+
+        this.deletePathCircles()
+
+      }
+        console.log(this.scope.project);
     },
     forward(){
+      this.scaleMode = false
       if(this.currentIndex<this.pathHistory.length-1){
         this.currentIndex++
         if(this.pathHistory[this.currentIndex] && this.pathHistory[this.currentIndex].simplify){
@@ -111,35 +290,34 @@ export default {
       }
     },
     drawCircles(){
-      let path = this.scope.project._children[0]._children[0]
-      console.log(path)
-      if(path._segments){
-        for(let i=0 ; i<path._segments.length ; i++){
-          var shape19 = new paper.Shape.Circle(new paper.Point(path._segments[i].point.x,path._segments[i].point.y), 10);
-          shape19.strokeColor = 'rgba(0,38,32,0.5)';
-          shape19.fillColor = 'rgba(0,255,217,0.2)';
+      if(!this.scaleMode){
+        let path = this.scope.project._children[0]._children[0]
+        //console.log(path)
+        if(path._segments){
+          for(let i=0 ; i<path._segments.length ; i++){
+            var shape19 = new paper.Shape.Circle(new paper.Point(path._segments[i].point.x,path._segments[i].point.y), 10);
+            shape19.strokeColor = 'rgba(0,38,32,0.5)';
+            shape19.name = 'circlePaht';
+            shape19.fillColor = 'rgba(0,255,217,0.2)';
+          }
+        }
+        if(path._segments.length>3){
+          this.fewSegments = false
+        } else {
+          this.fewSegments = true
         }
       }
     },
-    clearPaper(event){
-      if(event){
-        event.target.blur()
-        if(event.target.nodeName == "SPAN") {
-          event.target.parentNode.blur();
-        }
-      }
+    clearPaper(){
       this.simpArr= null
       this.pathHistory= []
       this.currentIndex= 0
+      this.scaleMode = false
+      this.simpValue = 2
       this.$emit('clearHandler')
     },
-    back(event){
-      if(event){
-        event.target.blur()
-        if(event.target.nodeName == "SPAN") {
-          event.target.parentNode.blur();
-        }
-      }
+    back(){
+      this.scaleMode = false
       if(this.currentIndex>0){
         this.currentIndex--
         if(this.pathHistory[this.currentIndex-1] && this.pathHistory[this.currentIndex-1].simplify){
@@ -321,10 +499,45 @@ export default {
         this.tool = this.createTool(this.scope);
       }
       this.tool.onMouseDown = (event) => {
+        this.strokeScaleNumber = null
+        this.cornerScale = null
         if(!this.dragMode) {
           self.path = self.pathCreate(self.scope);
           self.path.add(event.point);
         } else {
+          if(this.scaleMode){
+
+            this.path2 = null;
+            let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
+            if(hitResult && hitResult.type == 'stroke' && hitResult.item.name == "csaleRectangle"){
+              this.strokeScaleNumber = hitResult.item.curves.findIndex(i=>i.point1.x == hitResult.location.curve.point1.x && i.point1.y == hitResult.location.curve.point1.y)
+              this.path2 = this.scope.project._children[0]._children[0]
+            }
+            if(hitResult && hitResult.type == 'fill'){
+              this.path2 = hitResult.item
+            }
+            let frameCircles = this.scope.project.activeLayer.children.filter(i=>i.name && i.type == 'circle')
+            let index = null
+            let distanceTotal = 10000
+            for(let i=0; i<frameCircles.length; i++){
+              let distanceX = Math.abs(event.point.x - frameCircles[i].position.x)
+              let distanceY = Math.abs(event.point.y - frameCircles[i].position.y)
+              if(distanceY + distanceX < distanceTotal) {
+                distanceTotal = distanceY + distanceX
+                index = i
+              }
+            }
+            if(distanceTotal<40){
+              let currr = frameCircles[index]
+              this.cornerScale = currr.name
+              this.path2 = this.scope.project._children[0]._children[0]
+            }
+            if(!this.path2){
+              this.changeScale()
+            }
+          } else {
+
+
           this.segment = null;
           this.path2 = null;
           let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
@@ -367,6 +580,7 @@ export default {
             if (hitResult.type == 'segment') {
               this.segment = hitResult.segment;
             } else if (hitResult.type == 'stroke' && hitResult.item._type != "circle") {
+              console.log(hitResult)
               let location = hitResult.location;
               this.segment = this.path2.insert(location.index + 1, event.point);
               //this.path2.smooth();
@@ -385,28 +599,28 @@ export default {
           this.movePath = hitResult.type == 'fill';
           if (this.movePath)
             this.scope.project.activeLayer.addChild(hitResult.item);
+            }
         }
       };
 
 
       this.tool.onMouseMove= (event) => {
+        this.toNormalSizeChildren()
         this.scope.project.activeLayer.selected = false;
-        if (event.item){
-          event.item.selected = true;
+        // if (event.item){
+        //   event.item.selected = true;
+        // }
+        let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
+        if(hitResult && hitResult.item.type == 'circle' && hitResult.item.radius == 10){
+          this.scope.project._children[0]._children.find(i=>i.id == hitResult.item.id).radius = 15
+        } else if(hitResult && hitResult.type == 'stroke' && !this.scaleMode) {
+          this.scope.project._children[0]._children[0].strokeWidth = 3;
         }
       }
 
       this.tool.onMouseDrag = (event) => {
 
-        while(this.scope.project._children[0]._children.find(i=>i.type=="circle")){
-          for(let i=0 ; i<this.scope.project._children[0]._children.length ; i++){
-            if(this.scope.project._children[0]._children[i].type=="circle"){
-              this.scope.project._children[0]._children[i].remove()
-            }
-          }
-        }
-
-
+        this.deletePathCircles()
 
         if(!this.dragMode) {
 
@@ -417,22 +631,67 @@ export default {
             this.crossed = true
           }
         } else {
-          // if(this.path2._segments){
-          //   for(let i=0 ; i<this.path2._segments.length ; i++){
-          //     var shape19 = new paper.Shape.Circle(new paper.Point(this.path2._segments[i].point.x,this.path2._segments[i].point.y), 10);
-          //     shape19.strokeColor = 'rgba(0,38,32,0.5)';
-          //     shape19.fillColor = 'rgba(0,255,217,0.2)';
-          //   }
-          // }
-          this.drawCircles()
-          if (this.segment) {
-
-            this.segment.point.x += event.delta.x;
-            this.segment.point.y += event.delta.y;
-            //this.path2.smooth();
-          } else if (this.path2) {
-            this.path2.position.x += event.delta.x;
-            this.path2.position.y += event.delta.y;
+          if(this.scaleMode){
+            if(this.cornerScale){
+              switch(this.cornerScale) {
+                case 'topRight':
+                  if((event.delta.x > 0 && event.delta.y < 0) || (event.delta.x < 0 && event.delta.y > 0)){
+                    event.delta.x > 0 ? this.path2.scale(1.02, 1) : this.path2.scale(0.98, 1)
+                    event.delta.y < 0 ? this.path2.scale(1, 1.02) : this.path2.scale(1, 0.98)
+                  }
+                  break;
+                case 'topLeft':
+                  if((event.delta.x > 0 && event.delta.y > 0) || (event.delta.x < 0 && event.delta.y < 0)){
+                    event.delta.y < 0 ? this.path2.scale(1, 1.02) : this.path2.scale(1, 0.98)
+                    event.delta.x < 0 ? this.path2.scale(1.02, 1) : this.path2.scale(0.98, 1)
+                  }
+                  break;
+                case 'bottomRight':
+                  if((event.delta.x > 0 && event.delta.y > 0) || (event.delta.x < 0 && event.delta.y < 0)){
+                    event.delta.y > 0 ? this.path2.scale(1, 1.02) : this.path2.scale(1, 0.98)
+                    event.delta.x > 0 ? this.path2.scale(1.02, 1) : this.path2.scale(0.98, 1)
+                  }
+                  break;
+                case 'bottomLeft':
+                  if((event.delta.x > 0 && event.delta.y < 0) || (event.delta.x < 0 && event.delta.y > 0)){
+                    event.delta.x < 0 ? this.path2.scale(1.02, 1) : this.path2.scale(0.98, 1)
+                    event.delta.y > 0 ? this.path2.scale(1, 1.02) : this.path2.scale(1, 0.98)
+                  }
+                  break;
+              }
+              this.deleteScaleRectangle()
+              this.drawScaleRectangle()
+            } else if (this.path2 && this.strokeScaleNumber === null) {
+              this.path2.position.x += event.delta.x;
+              this.path2.position.y += event.delta.y;
+              this.deleteScaleRectangle()
+              this.drawScaleRectangle()
+            } else if(this.strokeScaleNumber !== null) {
+              switch(this.strokeScaleNumber) {
+                case 0:
+                  event.delta.x < 0 ? this.path2.scale(1.03, 1) : this.path2.scale(0.97, 1)
+                  break;
+                case 1:
+                  event.delta.y < 0 ? this.path2.scale(1, 1.04) : this.path2.scale(1, 0.97)
+                  break;
+                case 2:
+                  event.delta.x > 0 ? this.path2.scale(1.03, 1) : this.path2.scale(0.97, 1)
+                  break;
+                case 3:
+                  event.delta.y > 0 ? this.path2.scale(1, 1.04) : this.path2.scale(1, 0.97)
+                  break;
+              }
+              this.deleteScaleRectangle()
+              this.drawScaleRectangle()
+            }
+          } else {
+            if (this.segment) {
+              this.segment.point.x += event.delta.x;
+              this.segment.point.y += event.delta.y;
+            } else if (this.path2) {
+              this.path2.position.x += event.delta.x;
+              this.path2.position.y += event.delta.y;
+            }
           }
         }
 
@@ -518,7 +777,6 @@ export default {
           //
           // }
           console.log(this.scope.project._children[0]._children[0])
-          this.drawCircles()
 
 
           this.pathExtra = self.path
@@ -533,14 +791,22 @@ export default {
           console.log('HISTORY')
           console.log(this.scope.project._children[0]._children[0])
         }
+        this.deletePathCircles()
+        this.drawCircles()
       }
     }
   },
   mounted() {
     this.scope = new paper.PaperScope();
     this.scope.setup(this.canvasId);
+    console.log(document.body.clientWidth);
   },
   watch:{
+    externalPathCurveCall(val){
+      if(val) {
+        this.ttt()
+      }
+    },
     clear(){
       this.currentArr = [];
       this.finishArr = []
@@ -553,23 +819,19 @@ export default {
 
         // this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData})
         // this.currentIndex++
-        console.log(this.pathHistory.length)
 
 
-        if(!this.simpArr){
-          this.simpArr=this.scope.project._children[0]._children[0].pathData
-          console.log(this.simpArr)
-        }
+        this.simpArr=this.pathHistory[this.pathHistory.length-1].data
 
         this.$emit('clearSimp')
-        console.log(this.simpArr)
         self.path = new paper.Path(this.simpArr)
         self.path.strokeColor = 'black';
         self.path.fillColor = 'red';
-        console.log(this.simpArr)
         if(val>oldVal){
-          self.path.simplify(val);
+          self.path.flatten(1);
+          self.path.simplify();
         } else {
+          //self.path.simplify();
           self.path.flatten(40/val);
         }
         this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData, simplify:true})
@@ -585,15 +847,168 @@ export default {
 </script>
 
 <style scoped>
+input[type=range] {
+  height: 30px;
+  -webkit-appearance: none;
+  margin: 10px 0;
+  width: 100%;
+}
+input[type=range]:focus {
+  outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 30px;
+  cursor: pointer;
+  animate: 0.2s;
+  box-shadow: 0px 0px 0px #353535;
+  background: #b4a4a1;
+  border-radius: 30px;
+  border: 1px solid #000000;
+}
+input[type=range]::-webkit-slider-thumb {
+  box-shadow: 0px 0px 0px #353535;
+  border: 0px solid #f3c846;
+  height: 28px;
+  width: 28px;
+  border-radius: 29px;
+  background: #231f20;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: 0px;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #b4a4a1;
+}
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 30px;
+  cursor: pointer;
+  animate: 0.2s;
+  box-shadow: 0px 0px 0px #353535;
+  background: #b4a4a1;
+  border-radius: 30px;
+  border: 1px solid #000000;
+}
+input[type=range]::-moz-range-thumb {
+  box-shadow: 0px 0px 0px #353535;
+  border: 0px solid #f3c846;
+  height: 28px;
+  width: 28px;
+  border-radius: 29px;
+  background: #231f20;
+  cursor: pointer;
+}
+input[type=range]::-ms-track {
+  width: 100%;
+  height: 30px;
+  cursor: pointer;
+  animate: 0.2s;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+  background: #b4a4a1;
+  border: 1px solid #000000;
+  border-radius: 29px;
+  box-shadow: 0px 0px 0px #353535;
+}
+input[type=range]::-ms-fill-upper {
+  background: #b4a4a1;
+  border: 1px solid #000000;
+  border-radius: 29px;
+  box-shadow: 0px 0px 0px #353535;
+}
+input[type=range]::-ms-thumb {
+  margin-top: 1px;
+  box-shadow: 0px 0px 0px #353535;
+  border: 0px solid #f3c846;
+  height: 28px;
+  width: 28px;
+  border-radius: 29px;
+  background: #231f20;
+  cursor: pointer;
+}
+input[type=range]:focus::-ms-fill-lower {
+  background: #b4a4a1;
+}
+input[type=range]:focus::-ms-fill-upper {
+  background: #b4a4a1;
+}
+input[type="range" i]:disabled {
+    background-color: initial;
+    color: rgb(197, 197, 197);
+}
+
+
+input[type=range]:disabled::-webkit-slider-thumb {
+  box-shadow: 0px 0px 0px #353535;
+  height: 28px;
+  width: 28px;
+  border-radius: 29px;
+  background: #6d6265;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: 0px;
+}
+input[type=range]:disabled::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 30px;
+  cursor: pointer;
+  animate: 0.2s;
+  box-shadow: 0px 0px 0px #353535;
+  background: #dbc8c4;
+  border-radius: 30px;
+  border: 1px solid #464646;
+}
+
+
+.buttons-block{
+  display: flex;
+    flex-direction: column;
+}
+.buttons-wrap{
+  display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+}
+.btn-wrap{
+  margin-bottom: 30px;
+}
+.btn-tool{
+  font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+    letter-spacing: 3px;
+  width: 280px;
+  height: 40px;
+}
+.el-button+.el-button {
+    margin-left: 0px;
+}
+.el-button{
+  border-radius: 50px;
+  color: #231f20;
+  background-color: white;
+  border: 1px solid #231f20;
+}
+.el-button:hover{
+  color: white;
+  background-color: #231f20;
+}
 .canvas-style {
+  height: 350px;
   cursor: crosshair;
-  width: 50% !important;
-  height: 500px !important;
   border-radius: 10px;
   display: block;
   margin: auto;
   -webkit-box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
   -moz-box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
   box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
+}
+canvas[resize] {
+    width: 80%;
+    height: 100%;
 }
 </style>

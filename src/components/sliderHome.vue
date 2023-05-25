@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <div class="wrapper-block">
+    <div class="wrapper-block">{{ count }}{{ ddd }}
       <div class="content-row">
         <div class="card-item">
           <div class="card-image">
@@ -67,21 +67,150 @@
         </div>
       </div>
     </div>
+
+
+
+
+
+    <div v-show="count" class="wrapper-block appear">
+      <div class="content-row">
+        <div class="card-item">
+          <div class="card-image">
+            <img class="image" src="../assets/collection/mir1.jpg">
+          </div>
+          <div class="card-sign">Ольга Иванова г.Москва</div>
+          <div class="card-button button">ХОЧУ ТАКОЕ ЖЕ</div>
+        </div>
+        <div class="card-item">
+          <div class="card-image">
+            <img class="image" src="../assets/collection/mir2.jpg">
+          </div>
+          <div class="card-sign">Ольга Иванова г.Москва</div>
+          <div class="card-button button">ХОЧУ ТАКОЕ ЖЕ</div>
+        </div>
+        <div class="card-item">
+          <div class="card-image">
+            <img class="image" src="../assets/collection/mir3.jpg">
+          </div>
+          <div class="card-sign">Ольга Иванова г.Москва</div>
+          <div class="card-button button">ХОЧУ ТАКОЕ ЖЕ</div>
+        </div>
+        <div class="card-item">
+          <div class="card-image">
+            <img class="image" src="../assets/collection/mir4.jpg">
+          </div>
+          <div class="card-sign">Ольга Иванова г.Москва</div>
+          <div class="card-button button">ХОЧУ ТАКОЕ ЖЕ</div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+    <div class="trigger"></div>
   </div>
 </template>
 
 <script>
 
+// let observer = new window.IntersectionObserver(this.returnOnEntry,this.options);
 export default {
   name: 'HelloWorld',
+  data: () => ({
+    count: 0,
+    observer: null,
+    row1:[
+      {
+        name: "Ольга Иванова г.Москва",
+        img: "../assets/collection/mir1.jpg",
+        path: "",
+        price: "",
+      },
+      {
+        name: "Ольга Иванова г.Москва",
+        img: "../assets/collection/mir2.jpg",
+        path: "",
+        price: "",
+      },
+      {
+        name: "Ольга Иванова г.Москва",
+        img: "../assets/collection/mir3.jpg",
+        path: "",
+        price: "",
+      },
+      {
+        name: "Ольга Иванова г.Москва",
+        img: "../assets/collection/mir4.jpg",
+        path: "",
+        price: "",
+      },
+    ]
+  }),
+  watch: {
+    count() {
+      console.log(document);
+    }
+  },
   props: {
     msg: String
   },
+  computed: {
+
+  },
+  mounted() {
+    this.observer = new IntersectionObserver(
+      this.returnOnEntry(), 
+      {
+        threshold: [0.9],
+      }
+    );
+    this.observer.observe(document.getElementsByClassName('trigger')[0]);
+  },
+  methods: {
+    returnOnEntry(){
+      let scope = this
+      return function (entry) {
+        entry.forEach(change => {
+          if (change.isIntersecting) {
+            scope.count++
+            //change.target.classList.add('element-show');
+          }
+        });
+      }
+    }
+  },
+
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
+.appear{
+  opacity: 0;
+  transform: translateY(20px);
+  opacity: 1;
+}
+.appear.element-show {
+  opacity: 1;
+  transition: all 1.5s;
+  transform: translateY(0%);
+}
+
+
+
+.appear{
+
+}
+.appear.element-show {
+
+}
+.trigger{
+  height: 300px;
+  background-color: aqua;
+}
 .card-button.button{
   margin-top: 5px;
   width: 80%;
@@ -136,18 +265,28 @@ border-radius: 20px 20px 0 0;
 .card-sign{
 font-size: 12px;
 line-height: 1.2em;
-padding-top: 22px;
+padding-top: 28px;
+padding-bottom: 12px;
 }
 .card-button{
 color: #231f20;
 background-color: white;
 font-size: 12px;
 border: 1px solid #231f20;
-line-height: 1em;
+line-height: 1.5em;
 }
 .card-button:hover{
 color: white;
 background-color: #231f20;
+}
+@media (max-width: 1300px) {
+  .card-sign{
+    padding-top: 22px;
+    padding-bottom: 0px;
+  }
+  .card-button{
+    line-height: 1.5em;
+  }
 }
 @media (max-width: 1024px) {
   /*.card-image{*/
@@ -159,6 +298,9 @@ background-color: #231f20;
   .card-sign{
     font-size: 10px;
     padding-top: 13px;
+  }
+  .card-button{
+    line-height: 1em;
   }
   .card-button.button{
     font-size: 9px;
