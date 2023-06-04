@@ -34,11 +34,11 @@
       МАСШТАБ
     </el-button>
 
-      <el-button @click="ttt" class="btn-wrap btn-tool">
+      <el-button @click="curveEditorHandler" class="btn-wrap btn-tool">
         <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
-          <ArrowExpand />
+          <VectorCurve />
         </el-icon>
-        ttt
+        КРИВЫЕ
       </el-button>
 
     <div style=" display: flex; flex-direction: column;">
@@ -64,17 +64,17 @@ import Undo from 'vue-material-design-icons/Undo.vue';
 import Redo from 'vue-material-design-icons/Redo.vue';
 import Delete from 'vue-material-design-icons/Delete.vue';
 import ArrowExpand from 'vue-material-design-icons/ArrowExpand.vue';
+import VectorCurve from 'vue-material-design-icons/VectorCurve.vue';
 const paper = require('paper');
 export default {
   name: "CanvasPaper",
   components: {
-    Undo, Redo, Delete, ArrowExpand
+    Undo, Redo, Delete, ArrowExpand, VectorCurve
   },
   props: {
     canvasId:String,
     clear: Boolean,
     dragMode: Boolean,
-    externalPathCurveCall: Boolean,
   },
   emits: ['clearCanvas', 'clearSimp', 'clearHandler', 'nextButton'],
   data: () => ({
@@ -86,6 +86,7 @@ export default {
 
     pathExtra:null,
 
+    curveEditorMode: false,
     scaleMode: false,
     strokeScaleNumber: null,
     cornerScale: null,
@@ -93,6 +94,8 @@ export default {
     simpValue: 2,
     fewSegments: false,
     segment: null,
+    segmentDot: null,
+    segmentPointNumber: 0,
     movePath: false,
     path2: null,
     hitOptions: {
@@ -101,7 +104,6 @@ export default {
       fill: true,
       tolerance: 10
     },
-
 
 
     crossed: false,
@@ -118,72 +120,10 @@ export default {
     finishArr: []
   }),
   methods: {
-    ttt(){
-      //console.log(this.scope.project._children[0]._children[0].segments)
-
-      let tty = this.scope.project._children[0]._children[0]
-
-      console.log('=================================')
-
-      for(let i=0;i<tty.segments.length;i++){
-        console.log(tty.segments[i].curve.points)
-      }
-      console.log('=================================')
-      //tty.scale(1.3, 1.3)
-
-      //this.path2.position.y += event.delta.y;
-      console.log('=================================')
-      // this.$emit('setPathCurveExternal',this.scope.project._children[0]._children[0].segments)
-      let arrSeg = this.scope.project._children[0]._children[0].segments
-      let nArr = []
-
-      for(let i=0;i<arrSeg.length;i++){
-        nArr.push(arrSeg[i])
-      }
-      var pathCopy1 = this.scope.project._children[0]._children[0]
-      pathCopy1.flatten(0.5);
-
-      // var pathCopy1 = this.scope.project._children[0]._children[0].clone()
-      // pathCopy1.position = new paper.Point(pathCopy1.position.x +10, pathCopy1.position.y +10);
-      // pathCopy1.name='strokePathSegment'
-      // var pathCopy2 = this.scope.project._children[0]._children[0].clone()
-      // pathCopy2.position = new paper.Point(pathCopy2.position.x -10, pathCopy2.position.y -10);
-      // pathCopy2.name='strokePathSegment'
-      // var pathCopy3 = this.scope.project._children[0]._children[0].clone()
-      // pathCopy3.position = new paper.Point(pathCopy3.position.x, pathCopy3.position.y -20);
-      // pathCopy3.name='strokePathSegment'
-      // var pathCopy4 = this.scope.project._children[0]._children[0].clone()
-      // pathCopy4.position = new paper.Point(pathCopy4.position.x, pathCopy4.position.y +20);
-      // pathCopy4.name='strokePathSegment'
-      // var pathCopy5 = this.scope.project._children[0]._children[0].clone()
-      // pathCopy5.position = new paper.Point(pathCopy5.position.x +20, pathCopy5.position.y);
-      // pathCopy5.name='strokePathSegment'
-      // var pathCopy6 = this.scope.project._children[0]._children[0].clone()
-      // pathCopy6.position = new paper.Point(pathCopy6.position.x -20, pathCopy6.position.y);
-      // pathCopy6.name='strokePathSegment'
-      // var pathCopy7 = this.scope.project._children[0]._children[0].clone()
-      // pathCopy7.position = new paper.Point(pathCopy7.position.x +10, pathCopy7.position.y -10);
-      // pathCopy7.name='strokePathSegment'
-      // var pathCopy8 = this.scope.project._children[0]._children[0].clone()
-      // pathCopy8.position = new paper.Point(pathCopy8.position.x -10, pathCopy8.position.y +10);
-      // pathCopy8.name='strokePathSegment'
-      //
-      // pathCopy1.join(pathCopy2).join(pathCopy3).join(pathCopy4).join(pathCopy5).join(pathCopy6).join(pathCopy7).join(pathCopy8)
-
-
-      //pathCopy1.scale(1.3)
-      //var pathCopy2 = this.scope.project._children[0]._children[0].clone()
-      //pathCopy2.scale(0.77, 1)
-      //
-      //pathCopy1.join(pathCopy2)
-      //pathCopy1.strokeWidth = 20
-
-
-
-      //let nArr = JSON.parse(JSON.stringify(this.scope.project._children[0]._children[0].segments))
-      this.$emit('setPathCurveExternal',pathCopy1.segments)
-      //tty.scale(0.77,0.77)
-
+    curveEditorHandler(){
+      let self = this;
+      self.path.fullySelected = true;
+      this.drawCirclesCurves()
     },
     goToDrawPage(){
       this.scope.project._children[0]._children[0].flatten(1);
@@ -289,10 +229,34 @@ export default {
         }
       }
     },
+    drawCirclesCurves(){
+      if(!this.scaleMode){
+        let path = this.scope.project._children[0]._children[0]
+        console.log(path)
+        if(path._segments){
+          for(let i=0 ; i<path._segments.length ; i++){
+
+            var shape192 = new paper.Shape.Circle(new paper.Point(path._segments[i].curve.points[1].x,path._segments[i].curve.points[1].y), 3);
+            shape192.name = 'circlePaht';
+            shape192.fillColor = 'rgba(0,157,236)';
+
+            var shape145 = new paper.Shape.Circle(new paper.Point(path._segments[i].curve.points[2].x,path._segments[i].curve.points[2].y), 3);
+            shape145.name = 'circlePaht';
+            shape145.fillColor = 'rgba(0,157,236)';
+          }
+        }
+        console.log(path)
+        if(path._segments.length>3){
+          this.fewSegments = false
+        } else {
+          this.fewSegments = true
+        }
+      }
+    },
     drawCircles(){
       if(!this.scaleMode){
         let path = this.scope.project._children[0]._children[0]
-        //console.log(path)
+        console.log(path)
         if(path._segments){
           for(let i=0 ; i<path._segments.length ; i++){
             var shape19 = new paper.Shape.Circle(new paper.Point(path._segments[i].point.x,path._segments[i].point.y), 10);
@@ -301,6 +265,7 @@ export default {
             shape19.fillColor = 'rgba(0,255,217,0.2)';
           }
         }
+        console.log(path)
         if(path._segments.length>3){
           this.fewSegments = false
         } else {
@@ -494,7 +459,7 @@ export default {
       let self = this;
       if(!this.dragMode){
         if (this.path) {
-          this.path.selected = false;
+          //this.path.selected = false;
         }
         this.tool = this.createTool(this.scope);
       }
@@ -540,6 +505,8 @@ export default {
 
           this.segment = null;
           this.path2 = null;
+          this.segmentDot = null;
+          this.segmentPointNumber = 0
           let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
 
           if (!hitResult)
@@ -561,17 +528,44 @@ export default {
 
 
               if(hitResult.item._type == "circle"){
-                let index = null
-                let distanceTotal = 10000
-                for(let i=0; i<this.path2._segments.length; i++){
-                  let distanceX = Math.abs(hitResult.item.position.x - this.path2._segments[i].point.x)
-                  let distanceY = Math.abs(hitResult.item.position.y - this.path2._segments[i].point.y)
-                  if(distanceY + distanceX < distanceTotal) {
-                    distanceTotal = distanceY + distanceX
-                    index = i
+                if(hitResult.item.radius == 3){
+
+                  let index = null
+                  let distanceTotal = 10000
+                  for(let i=0; i<this.path2._segments.length; i++){
+                    let distanceX = Math.abs(hitResult.item.position.x - this.path2._segments[i].curve.points[1].x)
+                    let distanceY = Math.abs(hitResult.item.position.y - this.path2._segments[i].curve.points[1].y)
+                    if(distanceY + distanceX < distanceTotal) {
+                      distanceTotal = distanceY + distanceX
+                      this.segmentPointNumber = 1
+                      index = i
+                    }
+
+                    distanceX = Math.abs(hitResult.item.position.x - this.path2._segments[i].curve.points[2].x)
+                    distanceY = Math.abs(hitResult.item.position.y - this.path2._segments[i].curve.points[2].y)
+                    if(distanceY + distanceX < distanceTotal) {
+                      distanceTotal = distanceY + distanceX
+                      this.segmentPointNumber = 2
+                      index = i
+                    }
                   }
+                  this.segmentDot = this.path2._segments[index]
+
+
+
+                } else {
+                  let index = null
+                  let distanceTotal = 10000
+                  for(let i=0; i<this.path2._segments.length; i++){
+                    let distanceX = Math.abs(hitResult.item.position.x - this.path2._segments[i].point.x)
+                    let distanceY = Math.abs(hitResult.item.position.y - this.path2._segments[i].point.y)
+                    if(distanceY + distanceX < distanceTotal) {
+                      distanceTotal = distanceY + distanceX
+                      index = i
+                    }
+                  }
+                  this.segment = this.path2._segments[index]
                 }
-                this.segment = this.path2._segments[index]
               }
             }
 
@@ -606,7 +600,7 @@ export default {
 
       this.tool.onMouseMove= (event) => {
         this.toNormalSizeChildren()
-        this.scope.project.activeLayer.selected = false;
+        //this.scope.project.activeLayer.selected = false;
         // if (event.item){
         //   event.item.selected = true;
         // }
@@ -685,13 +679,25 @@ export default {
               this.drawScaleRectangle()
             }
           } else {
-            if (this.segment) {
-              this.segment.point.x += event.delta.x;
-              this.segment.point.y += event.delta.y;
-            } else if (this.path2) {
-              this.path2.position.x += event.delta.x;
-              this.path2.position.y += event.delta.y;
+            if (this.segmentDot){
+              if(this.segmentPointNumber == 1){
+                this.segmentDot.curve.handle1.x += event.delta.x;
+                this.segmentDot.curve.handle1.y += event.delta.y;
+              } else if(this.segmentPointNumber == 2){
+                this.segmentDot.curve.handle2.x += event.delta.x;
+                this.segmentDot.curve.handle2.y += event.delta.y;
+              }
+              console.log(this.segmentDot.curve.points[2])
+            } else {
+              if (this.segment) {
+                this.segment.point.x += event.delta.x;
+                this.segment.point.y += event.delta.y;
+              } else if (this.path2) {
+                this.path2.position.x += event.delta.x;
+                this.path2.position.y += event.delta.y;
+              }
             }
+
           }
         }
 
@@ -742,7 +748,7 @@ export default {
 
 
 
-          self.path.simplify(0);
+          self.path.simplify(30);
 
 
           this.simpArr=this.scope.project._children[0]._children[0].pathData
@@ -791,6 +797,7 @@ export default {
           console.log('HISTORY')
           console.log(this.scope.project._children[0]._children[0])
         }
+        //self.path.selected = false;
         this.deletePathCircles()
         this.drawCircles()
       }
@@ -802,11 +809,6 @@ export default {
     console.log(document.body.clientWidth);
   },
   watch:{
-    externalPathCurveCall(val){
-      if(val) {
-        this.ttt()
-      }
-    },
     clear(){
       this.currentArr = [];
       this.finishArr = []
@@ -839,6 +841,7 @@ export default {
 
 
         this.drawCircles()
+        //self.path.fullySelected = true;
       }
 
     }
