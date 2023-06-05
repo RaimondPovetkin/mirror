@@ -34,18 +34,11 @@
       МАСШТАБ
     </el-button>
 
-      <el-button @click="rotateHandler" class="btn-wrap btn-tool">
-        <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
-          <ArrowExpand />
-        </el-icon>
-        Поворот
-      </el-button>
-
       <el-button @click="curveEditorHandler" class="btn-wrap btn-tool">
         <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
           <VectorCurve />
         </el-icon>
-        КРИВЫЕ {{ curveEditorMode }}
+        КРИВЫЕ
       </el-button>
 
     <div style=" display: flex; flex-direction: column;">
@@ -127,38 +120,14 @@ export default {
     finishArr: []
   }),
   methods: {
-    rotateHandler(){
-      console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
-      let path = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-      let radius = path.bounds.width > path.bounds.height ? path.bounds.width/2 : path.bounds.height/2
-
-          let shape = new paper.Shape.Circle({
-        center: [path.position.x, path.position.y],
-        radius: radius,
-        strokeColor: 'black'
-      });
-      shape.name = 'rotate'
-    },
     curveEditorHandler(){
       let self = this;
-      if(this.curveEditorMode){
-        self.path.fullySelected = false;
-        this.curveEditorMode = false
-        this.deleteMiniPathCircles()
-        this.drawCircles()
-      } else {
-        if(this.scaleMode){
-          this.changeScale()
-        }
-        self.path.fullySelected = true;
-        this.drawCirclesCurves()
-        this.curveEditorMode = true
-        this.deletePathCircles()
-      }
+      self.path.fullySelected = true;
+      this.drawCirclesCurves()
     },
     goToDrawPage(){
-      this.scope.project._children[0]._children.find(i=>i.className == "Path").flatten(1);
-      this.$emit('nextButton',this.scope.project._children[0]._children.find(i=>i.className == "Path").segments)
+      this.scope.project._children[0]._children[0].flatten(1);
+      this.$emit('nextButton',this.scope.project._children[0]._children[0].segments)
     },
     toNormalSizeChildren(){
       //this.scope.project._children[0]._children.find(i=>i.id == hitResult.item.id).radius = 20
@@ -166,7 +135,7 @@ export default {
         if(this.scope.project._children[0]._children[i].type == "circle" && this.scope.project._children[0]._children[i].radius > 5){
           this.scope.project._children[0]._children[i].radius = 10
         } else if(!this.scope.project._children[0]._children[i].type){
-          this.scope.project._children[0]._children.find(i=>i.className == "Path").strokeWidth = 1
+          this.scope.project._children[0]._children[0].strokeWidth = 1
         }
       }
     },  
@@ -182,7 +151,7 @@ export default {
     },
     drawScaleRectangle(){
 
-      let pathGeneral = this.scope.project._children[0]._children.find(i=>i.className == "Path")
+      let pathGeneral = this.scope.project._children[0]._children[0]
       let topLeft = pathGeneral.bounds
 
       var rectangle = new paper.Rectangle(new paper.Point(topLeft.topLeft.x, topLeft.topLeft.y), new paper.Size(topLeft.width, topLeft.height));
@@ -218,11 +187,6 @@ export default {
       let num = (document.body.clientWidth / 100) * 64
       return document.body.clientWidth - num
     },
-    deleteMiniPathCircles(){
-      while(this.scope.project.activeLayer.children['circlePahtMini']){
-        this.scope.project.activeLayer.children['circlePahtMini'].remove()
-      }
-    },
     deletePathCircles(){
       while(this.scope.project.activeLayer.children['circlePaht']){
         this.scope.project.activeLayer.children['circlePaht'].remove()
@@ -246,11 +210,7 @@ export default {
         this.drawScaleRectangle()
 
         this.deletePathCircles()
-        let self = this;
-        self.path.fullySelected = false;
-        this.curveEditorMode = false
-        this.deleteMiniPathCircles()
-        self.path.selected = false;
+
       }
         console.log(this.scope.project);
     },
@@ -271,17 +231,17 @@ export default {
     },
     drawCirclesCurves(){
       if(!this.scaleMode){
-        let path = this.scope.project._children[0]._children.find(i=>i.className == "Path")
+        let path = this.scope.project._children[0]._children[0]
         console.log(path)
         if(path._segments){
           for(let i=0 ; i<path._segments.length ; i++){
 
             var shape192 = new paper.Shape.Circle(new paper.Point(path._segments[i].curve.points[1].x,path._segments[i].curve.points[1].y), 3);
-            shape192.name = 'circlePahtMini';
+            shape192.name = 'circlePaht';
             shape192.fillColor = 'rgba(0,157,236)';
 
             var shape145 = new paper.Shape.Circle(new paper.Point(path._segments[i].curve.points[2].x,path._segments[i].curve.points[2].y), 3);
-            shape145.name = 'circlePahtMini';
+            shape145.name = 'circlePaht';
             shape145.fillColor = 'rgba(0,157,236)';
           }
         }
@@ -295,7 +255,7 @@ export default {
     },
     drawCircles(){
       if(!this.scaleMode){
-        let path = this.scope.project._children[0]._children.find(i=>i.className == "Path")
+        let path = this.scope.project._children[0]._children[0]
         console.log(path)
         if(path._segments){
           for(let i=0 ; i<path._segments.length ; i++){
@@ -318,13 +278,11 @@ export default {
       this.pathHistory= []
       this.currentIndex= 0
       this.scaleMode = false
-      this.curveEditorMode = false
       this.simpValue = 2
       this.$emit('clearHandler')
     },
     back(){
       this.scaleMode = false
-      this.curveEditorMode = false
       if(this.currentIndex>0){
         this.currentIndex--
         if(this.pathHistory[this.currentIndex-1] && this.pathHistory[this.currentIndex-1].simplify){
@@ -518,7 +476,7 @@ export default {
             let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
             if(hitResult && hitResult.type == 'stroke' && hitResult.item.name == "csaleRectangle"){
               this.strokeScaleNumber = hitResult.item.curves.findIndex(i=>i.point1.x == hitResult.location.curve.point1.x && i.point1.y == hitResult.location.curve.point1.y)
-              this.path2 = this.scope.project._children[0]._children.find(i=>i.className == "Path")
+              this.path2 = this.scope.project._children[0]._children[0]
             }
             if(hitResult && hitResult.type == 'fill'){
               this.path2 = hitResult.item
@@ -537,7 +495,7 @@ export default {
             if(distanceTotal<40){
               let currr = frameCircles[index]
               this.cornerScale = currr.name
-              this.path2 = this.scope.project._children[0]._children.find(i=>i.className == "Path")
+              this.path2 = this.scope.project._children[0]._children[0]
             }
             if(!this.path2){
               this.changeScale()
@@ -551,10 +509,9 @@ export default {
           this.segmentPointNumber = 0
           let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
 
-          if (!hitResult){
-            this.curveEditorHandler()
+          if (!hitResult)
             return;
-          }
+
 
           if (event.modifiers.shift) {
             if (hitResult.type == 'segment') {
@@ -563,11 +520,10 @@ export default {
             return;
           }
 
-
           if (hitResult) {
             this.path2 = hitResult.item;
             if(hitResult.type == 'fill' || hitResult.item._type == "circle"){
-              this.path2 = this.scope.project._children[0]._children.find(i=>i.className == "Path")
+              this.path2 = this.scope.project._children[0]._children[0]
 
 
 
@@ -652,17 +608,13 @@ export default {
         if(hitResult && hitResult.item.type == 'circle' && hitResult.item.radius == 10){
           this.scope.project._children[0]._children.find(i=>i.id == hitResult.item.id).radius = 15
         } else if(hitResult && hitResult.type == 'stroke' && !this.scaleMode) {
-          this.scope.project._children[0]._children.find(i=>i.className == "Path").strokeWidth = 3;
+          this.scope.project._children[0]._children[0].strokeWidth = 3;
         }
       }
 
       this.tool.onMouseDrag = (event) => {
 
         this.deletePathCircles()
-        this.deleteMiniPathCircles()
-        if(this.curveEditorMode){
-          self.path.fullySelected = true;
-        }
 
         if(!this.dragMode) {
 
@@ -799,14 +751,14 @@ export default {
           self.path.simplify(30);
 
 
-          this.simpArr=this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData
+          this.simpArr=this.scope.project._children[0]._children[0].pathData
           if(this.currentIndex != this.pathHistory.length-1){
             this.pathHistory.splice(this.currentIndex+1,Infinity)
           }
-          this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData})
+          this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData})
           this.currentIndex = this.pathHistory.length-1
           console.log('HISTORY')
-          console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
+          console.log(this.scope.project._children[0]._children[0])
 
 
           // let rer = []
@@ -830,28 +782,24 @@ export default {
           //
           //
           // }
-          console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
+          console.log(this.scope.project._children[0]._children[0])
 
 
           this.pathExtra = self.path
 
         } else {
-          this.simpArr=this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData
+          this.simpArr=this.scope.project._children[0]._children[0].pathData
           if(this.currentIndex != this.pathHistory.length-1){
             this.pathHistory.splice(this.currentIndex+1,Infinity)
           }
-          this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData})
+          this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData})
           this.currentIndex = this.pathHistory.length-1
           console.log('HISTORY')
-          console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
+          console.log(this.scope.project._children[0]._children[0])
         }
         //self.path.selected = false;
         this.deletePathCircles()
-        if(this.curveEditorMode){
-          this.drawCirclesCurves()  
-        } else {
-          this.drawCircles()
-        }
+        this.drawCircles()
       }
     }
   },
@@ -867,8 +815,8 @@ export default {
     },
     simpValue(val, oldVal){
 
-      if(this.scope.project._children[0]._children.find(i=>i.className == "Path")){
-        this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
+      if(this.scope.project._children[0]._children[0]){
+        this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData, simplify:true})
         this.currentIndex++
 
         // this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData})
@@ -888,7 +836,7 @@ export default {
           //self.path.simplify();
           self.path.flatten(40/val);
         }
-        this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
+        this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData, simplify:true})
         this.currentIndex++
 
 
