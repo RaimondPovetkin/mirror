@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <div class="wrapper-block">{{ count }}{{ ddd }}
+    <div class="wrapper-block">
       <div class="content-row">
         <div class="card-item">
           <div class="card-image">
@@ -72,7 +72,7 @@
 
 
 
-    <div v-show="count" class="wrapper-block appear">
+    <!-- <div v-show="count" class="wrapper-block appear">
       <div class="content-row">
         <div class="card-item">
           <div class="card-image">
@@ -103,7 +103,7 @@
           <div class="card-button button">ХОЧУ ТАКОЕ ЖЕ</div>
         </div>
       </div>
-    </div>
+    </div> -->
 
 
 
@@ -121,32 +121,32 @@ export default {
   data: () => ({
     count: 0,
     observer: null,
-    row1:[
-      {
-        name: "Ольга Иванова г.Москва",
-        img: "../assets/collection/mir1.jpg",
-        path: "",
-        price: "",
-      },
-      {
-        name: "Ольга Иванова г.Москва",
-        img: "../assets/collection/mir2.jpg",
-        path: "",
-        price: "",
-      },
-      {
-        name: "Ольга Иванова г.Москва",
-        img: "../assets/collection/mir3.jpg",
-        path: "",
-        price: "",
-      },
-      {
-        name: "Ольга Иванова г.Москва",
-        img: "../assets/collection/mir4.jpg",
-        path: "",
-        price: "",
-      },
-    ]
+    // row1:[
+    //   {
+    //     name: "Ольга Иванова г.Москва",
+    //     img: "../assets/collection/mir1.jpg",
+    //     path: "",
+    //     price: "",
+    //   },
+    //   {
+    //     name: "Ольга Иванова г.Москва",
+    //     img: "../assets/collection/mir2.jpg",
+    //     path: "",
+    //     price: "",
+    //   },
+    //   {
+    //     name: "Ольга Иванова г.Москва",
+    //     img: "../assets/collection/mir3.jpg",
+    //     path: "",
+    //     price: "",
+    //   },
+    //   {
+    //     name: "Ольга Иванова г.Москва",
+    //     img: "../assets/collection/mir4.jpg",
+    //     path: "",
+    //     price: "",
+    //   },
+    // ]
   }),
   watch: {
     count() {
@@ -207,10 +207,10 @@ export default {
 .appear.element-show {
 
 }
-.trigger{
+/* .trigger{
   height: 300px;
   background-color: aqua;
-}
+} */
 .card-button.button{
   margin-top: 5px;
   width: 80%;

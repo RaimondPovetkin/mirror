@@ -87,11 +87,10 @@ export default {
   letter-spacing: 3px;
   color: #231f20;
   background-color: white;
-  font-size: 12px;
   border: 1px solid #231f20;
   line-height: 1.5em;
   position: absolute;
-  left: 5%;
+  left: 3.5%;
   top: 10%;
   transform: translateY(-50%);
   z-index: 10;
@@ -119,4 +118,22 @@ background-color: #231f20;
 .el-carousel__item:nth-child(2n + 1) {
   background-color: #d3dce6;
 } */
+@media (max-width: 1300px) {
+  .button-home{
+  width: 150px;
+  height: 40px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  top: 8%;
+}
+}
+@media (max-width: 1024px) {
+  .button-home{
+  width: 140px;
+  height: 35px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  top: 8%;
+}
+}
 </style>

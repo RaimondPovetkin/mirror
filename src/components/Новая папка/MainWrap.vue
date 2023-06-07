@@ -112,12 +112,6 @@ export default {
         objectReflector.material.dispose();
         scene.remove( objectReflector );
 
-        const MirorBack = scene.getObjectByProperty( 'name', "MirorBack" );
-        if(MirorBack){
-          MirorBack.geometry.dispose();
-          MirorBack.material.dispose();
-          scene.remove( MirorBack );
-        }
 
         console.log(scene);
         renderer.renderLists.dispose();
@@ -312,26 +306,6 @@ export default {
 
 
 
-      let extrudeGeom2 = new THREE.ExtrudeGeometry( shapeCURVE, {
-        curveSegments: 162,
-        depth: 0.3,
-        bevelEnabled: false,  // Don't bevel the edges
-      });
-
-      var materialMir = new THREE.MeshBasicMaterial( { color: 0x969ea6 } );
-
-      let meshFormMir = new THREE.Mesh( extrudeGeom2, materialMir ) ;
-      meshFormMir.position.x=-4.4
-      meshFormMir.position.y=-14
-      meshFormMir.position.z=8
-
-      meshFormMir.rotation.y=1.57
-
-      meshFormMir.scale.x=0.4
-      meshFormMir.scale.y=0.4
-      meshFormMir.scale.z=0.4
-      meshFormMir.name = 'MirorBack'
-      scene.add( meshFormMir );
 
       this.setFrame1()
 
@@ -435,12 +409,49 @@ export default {
       // Return to the selected object
       return intersects;
     },
+    setMirorBack(){
+      var shapeCURVE = new THREE.Shape();
+
+      shapeCURVE.moveTo(this.pathCurve[0].curve.points[0].x /10,this.pathCurve[0].curve.points[0].y /10);
+      let ARR = []
+      for(let i=0; i<this.pathCurve.length-1;i++){
+        //path.bezierCurveTo(this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, this.pathCurve[i].curve.points[2].x / 10, this.pathCurve[i].curve.points[2].y / 10, this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 );
+        ARR.push(new THREE.Vector2(this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 ),)
+      }
+      shapeCURVE.splineThru(ARR);
+
+      let extrudeGeom2 = new THREE.ExtrudeGeometry( shapeCURVE, {
+        curveSegments: 162,
+        depth: 0.3,
+        bevelEnabled: false,  // Don't bevel the edges
+      });
+
+      var materialMir = new THREE.MeshBasicMaterial( { color: 0x969ea6 } );
+
+      let meshFormMir = new THREE.Mesh( extrudeGeom2, materialMir ) ;
+      meshFormMir.position.x=-4.4
+      meshFormMir.position.y=-14
+      meshFormMir.position.z=8
+
+      meshFormMir.rotation.y=1.57
+
+      meshFormMir.scale.x=0.4
+      meshFormMir.scale.y=0.4
+      meshFormMir.scale.z=0.4
+      meshFormMir.name = 'MirorBack'
+      scene.add( meshFormMir );
+    },
     removeMeshes(){
       for (let i = scene.children.length - 1; i >= 0; i--) {
-        if(scene.children[i].type === "Mesh" && scene.children[i].name !== "MirorBack"){
+        if(scene.children[i].type === "Mesh"){
+          console.log(scene.children[i].material);
           scene.children[i].geometry.dispose();
-          scene.children[i].material[0].dispose();
-          scene.children[i].material[1].dispose();
+          if(scene.children[i].material.length){
+            scene.children[i].material[0].dispose();
+            scene.children[i].material[1].dispose();
+          } else {
+            scene.children[i].material.dispose();
+          }
           scene.remove(scene.children[i]);
         }
 
@@ -508,12 +519,14 @@ export default {
 
     },
     setFrame2(){
+      this.frameIndex = 1
       this.removeMeshes()
+      this.setMirorBack()
     },
     setFrame3(){
 
       this.removeMeshes()
-
+      this.setMirorBack()
       this.frameIndex = 2
 
       const loader = new THREE.TextureLoader();

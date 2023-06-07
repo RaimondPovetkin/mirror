@@ -191,25 +191,109 @@ export default {
       path.strokeColor = 'black';
       path.dashArray = [10, 12];
 
-      var topLeftShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y), 5);
-      topLeftShape.name = 'topLeft'
-      topLeftShape.strokeColor = 'rgba(0,38,32,0.5)';
-      topLeftShape.fillColor = 'rgba(0,255,217,0.2)';
+      // var triangle = new paper.Path.RegularPolygon(new paper.Point(pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y), 3, 10);
+      // triangle.fillColor = '#e9e9ff';
+      // triangle.strokeColor = 'rgba(0,38,32,0.5)';
+      // triangle.name = 'topLeft'
+      // triangle.rotate(75);
 
-      var topRightShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.topRight.x,pathGeneral.bounds.topRight.y), 5);
-      topRightShape.name = 'topRight'
-      topRightShape.strokeColor = 'rgba(0,38,32,0.5)';
-      topRightShape.fillColor = 'rgba(0,255,217,0.2)';
+      let pathTopLeft = new paper.Path({
+          segments: [
+            [pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y], 
+            [pathGeneral.bounds.topLeft.x+10,pathGeneral.bounds.topLeft.y], 
+            [pathGeneral.bounds.topLeft.x+10,pathGeneral.bounds.topLeft.y-10],
+            [pathGeneral.bounds.topLeft.x-10,pathGeneral.bounds.topLeft.y-10],
+            [pathGeneral.bounds.topLeft.x-10,pathGeneral.bounds.topLeft.y+10],
+            [pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y+10],
+            [pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y],
+          ],
+          strokeColor: 'black',
+          fillColor: 'white',
+          strokeWidth: 1,
+      });
+      pathTopLeft.name = 'topLeft'
 
-      var bottomLeftShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.bottomLeft.x,pathGeneral.bounds.bottomLeft.y), 5);
-      bottomLeftShape.name = 'bottomLeft'
-      bottomLeftShape.strokeColor = 'rgba(0,38,32,0.5)';
-      bottomLeftShape.fillColor = 'rgba(0,255,217,0.2)';
 
-      var bottomRightShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.bottomRight.x,pathGeneral.bounds.bottomRight.y), 5);
-      bottomRightShape.name = 'bottomRight'
-      bottomRightShape.strokeColor = 'rgba(0,38,32,0.5)';
-      bottomRightShape.fillColor = 'rgba(0,255,217,0.2)';
+
+
+      let pathTopRight = new paper.Path({
+          segments: [
+            [pathGeneral.bounds.topRight.x,pathGeneral.bounds.topRight.y], 
+            [pathGeneral.bounds.topRight.x,pathGeneral.bounds.topRight.y+10], 
+            [pathGeneral.bounds.topRight.x+10,pathGeneral.bounds.topRight.y+10],
+            [pathGeneral.bounds.topRight.x+10,pathGeneral.bounds.topRight.y-10],
+            [pathGeneral.bounds.topRight.x-10,pathGeneral.bounds.topRight.y-10],
+            [pathGeneral.bounds.topRight.x-10,pathGeneral.bounds.topRight.y],
+            [pathGeneral.bounds.topRight.x,pathGeneral.bounds.topRight.y],
+          ],
+          strokeColor: 'black',
+          fillColor: 'white',
+          strokeWidth: 1,
+      });
+      pathTopRight.name = 'topRight'
+
+
+
+
+      let pathBottomRight = new paper.Path({
+          segments: [
+            [pathGeneral.bounds.bottomRight.x,pathGeneral.bounds.bottomRight.y], 
+            [pathGeneral.bounds.bottomRight.x,pathGeneral.bounds.bottomRight.y-10], 
+            [pathGeneral.bounds.bottomRight.x+10,pathGeneral.bounds.bottomRight.y-10],
+            [pathGeneral.bounds.bottomRight.x+10,pathGeneral.bounds.bottomRight.y+10],
+            [pathGeneral.bounds.bottomRight.x-10,pathGeneral.bounds.bottomRight.y+10],
+            [pathGeneral.bounds.bottomRight.x-10,pathGeneral.bounds.bottomRight.y],
+            [pathGeneral.bounds.bottomRight.x,pathGeneral.bounds.bottomRight.y],
+          ],
+          strokeColor: 'black',
+          fillColor: 'white',
+          strokeWidth: 1,
+      });
+      pathBottomRight.name = 'bottomRight'
+
+
+
+
+      let pathBottomLeft = new paper.Path({
+          segments: [
+            [pathGeneral.bounds.bottomLeft.x,pathGeneral.bounds.bottomLeft.y], 
+            [pathGeneral.bounds.bottomLeft.x,pathGeneral.bounds.bottomLeft.y-10], 
+            [pathGeneral.bounds.bottomLeft.x-10,pathGeneral.bounds.bottomLeft.y-10],
+            [pathGeneral.bounds.bottomLeft.x-10,pathGeneral.bounds.bottomLeft.y+10],
+            [pathGeneral.bounds.bottomLeft.x+10,pathGeneral.bounds.bottomLeft.y+10],
+            [pathGeneral.bounds.bottomLeft.x+10,pathGeneral.bounds.bottomLeft.y],
+            [pathGeneral.bounds.bottomLeft.x,pathGeneral.bounds.bottomLeft.y],
+          ],
+          strokeColor: 'black',
+          fillColor: 'white',
+          strokeWidth: 1,
+      });
+      pathBottomLeft.name = 'bottomLeft'
+
+      console.log(pathGeneral);
+
+
+
+
+      // var topLeftShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y), 5);
+      // topLeftShape.name = 'topLeft'
+      // topLeftShape.strokeColor = 'rgba(0,38,32,0.5)';
+      // topLeftShape.fillColor = 'rgba(0,255,217,0.2)';
+
+      // var topRightShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.topRight.x,pathGeneral.bounds.topRight.y), 5);
+      // topRightShape.name = 'topRight'
+      // topRightShape.strokeColor = 'rgba(0,38,32,0.5)';
+      // topRightShape.fillColor = 'rgba(0,255,217,0.2)';
+
+      // var bottomLeftShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.bottomLeft.x,pathGeneral.bounds.bottomLeft.y), 5);
+      // bottomLeftShape.name = 'bottomLeft'
+      // bottomLeftShape.strokeColor = 'rgba(0,38,32,0.5)';
+      // bottomLeftShape.fillColor = 'rgba(0,255,217,0.2)';
+
+      // var bottomRightShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.bottomRight.x,pathGeneral.bounds.bottomRight.y), 5);
+      // bottomRightShape.name = 'bottomRight'
+      // bottomRightShape.strokeColor = 'rgba(0,38,32,0.5)';
+      // bottomRightShape.fillColor = 'rgba(0,255,217,0.2)';
     },
     calcHeight(){
       return (document.body.clientWidth / 100) * 42
@@ -510,6 +594,7 @@ export default {
         this.cornerScale = null
         if(!this.dragMode) {
           self.path = self.pathCreate(self.scope);
+          self.path.name = 'generalPath'
           self.path.add(event.point);
         } else {
           if(this.scaleMode){
@@ -523,7 +608,7 @@ export default {
             if(hitResult && hitResult.type == 'fill'){
               this.path2 = hitResult.item
             }
-            let frameCircles = this.scope.project.activeLayer.children.filter(i=>i.name && i.type == 'circle')
+            let frameCircles = this.scope.project.activeLayer.children.filter(i=>i.name == 'bottomLeft' || i.name == 'bottomRight' || i.name == 'topLeft' || i.name == 'topRight')
             let index = null
             let distanceTotal = 10000
             for(let i=0; i<frameCircles.length; i++){
@@ -643,6 +728,26 @@ export default {
 
 
       this.tool.onMouseMove= (event) => {
+        if(this.scaleMode){
+          let cornersArr = this.scope.project.activeLayer.children.filter(i=>i.name == 'bottomLeft' || i.name == 'bottomRight' || i.name == 'topLeft' || i.name == 'topRight')
+          let distanceTotal = 10000
+          let index = null
+          for(let i=0; i<cornersArr.length; i++){
+            let distanceX = Math.abs(event.point.x - cornersArr[i].position.x)
+            let distanceY = Math.abs(event.point.y - cornersArr[i].position.y)
+            if(distanceY + distanceX < distanceTotal) {
+              distanceTotal = distanceY + distanceX
+              index = i
+            }
+          }
+          console.log(cornersArr[index].name)
+
+
+
+
+
+
+        }
         this.toNormalSizeChildren()
         //this.scope.project.activeLayer.selected = false;
         // if (event.item){
@@ -757,6 +862,9 @@ export default {
         if(!this.dragMode) {
           // завершаем линию
           self.path.add(new paper.Point(self.path.curves[0].point1._x, self.path.curves[0].point1._y))
+          //this.scope.project._children[0]._children.find(i=>i.className == "Path").name = 'generalPath'
+          console.log(this.scope.project.activeLayer.children);
+          console.log(this.scope.project.activeLayer.children['generalPath']);
           // формируем массив пересечений
           this.crossedArr = self.path.getCrossings(self.path)
 
