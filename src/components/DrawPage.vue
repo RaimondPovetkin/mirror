@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%; height:100%; display: flex; ">
+  <div style="width: 100%; height:100%; display: flex;" class="draw-page">
     <router-link to="/">
             <button class="button-home">Белое зеркало</button>
     </router-link>
@@ -67,16 +67,27 @@ export default {
 </script>
 
 <style>
-.slide-fade-enter-active {
-  transition: all .3s ease;
+.draw-page{
+  animation: 1s linear 0s alternate opacity-animation;
 }
-.slide-fade-leave-active {
-  transition: all .5s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+@keyframes opacity-animation {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-.slide-fade-enter, .slide-fade-leave-active {
-  padding-left: 10px;
-  opacity: 0;
-}
+/*.slide-fade-enter-active {*/
+/*  transition: all .3s ease;*/
+/*}*/
+/*.slide-fade-leave-active {*/
+/*  transition: all .5s cubic-bezier(1.0, 0.5, 0.8, 1.0);*/
+/*}*/
+/*.slide-fade-enter, .slide-fade-leave-active {*/
+/*  padding-left: 10px;*/
+/*  opacity: 0;*/
+/*}*/
 .button-home{
   width: 200px;
   height: 50px;

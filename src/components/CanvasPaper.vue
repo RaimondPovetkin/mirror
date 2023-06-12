@@ -34,13 +34,6 @@
       МАСШТАБ
     </el-button>
 
-      <el-button @click="rotateHandler" class="btn-wrap btn-tool">
-        <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
-          <ArrowExpand />
-        </el-icon>
-        Поворот
-      </el-button>
-
       <el-button @click="curveEditorHandler" class="btn-wrap btn-tool">
         <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
           <VectorCurve />
@@ -95,6 +88,7 @@ export default {
 
     curveEditorMode: false,
     scaleMode: false,
+    currentRotationPant: null,
     strokeScaleNumber: null,
     cornerScale: null,
 
@@ -109,7 +103,13 @@ export default {
       segments: true,
       stroke: true,
       fill: true,
-      tolerance: 10
+      tolerance: 1
+    },
+    hitOptions2: {
+      segments: true,
+      stroke: true,
+      fill: true,
+      tolerance: 1
     },
 
 
@@ -127,18 +127,6 @@ export default {
     finishArr: []
   }),
   methods: {
-    rotateHandler(){
-      console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
-      let path = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-      let radius = path.bounds.width > path.bounds.height ? path.bounds.width/2 : path.bounds.height/2
-
-          let shape = new paper.Shape.Circle({
-        center: [path.position.x, path.position.y],
-        radius: radius,
-        strokeColor: 'black'
-      });
-      shape.name = 'rotate'
-    },
     curveEditorHandler(){
       let self = this;
       if(this.curveEditorMode){
@@ -157,8 +145,11 @@ export default {
       }
     },
     goToDrawPage(){
+      let self = this;
       this.scope.project._children[0]._children.find(i=>i.className == "Path").flatten(1);
-      this.$emit('nextButton',this.scope.project._children[0]._children.find(i=>i.className == "Path").segments)
+      console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
+      console.log(self.path.getCrossings(self.path))
+      //this.$emit('nextButton',this.scope.project._children[0]._children.find(i=>i.className == "Path").segments)
     },
     toNormalSizeChildren(){
       //this.scope.project._children[0]._children.find(i=>i.id == hitResult.item.id).radius = 20
@@ -178,6 +169,21 @@ export default {
         children['topRight'].remove()
         children['bottomLeft'].remove()
         children['bottomRight'].remove()
+      }
+    },
+    deleteRotationArrows(){
+      var children = this.scope.project.activeLayer.children;
+      if(children['bottomLeftRot']){
+        children['bottomLeftRot'].remove()
+      }
+      if(children['bottomRightRot']){
+        children['bottomRightRot'].remove()
+      }
+      if(children['topLeftRot']){
+        children['topLeftRot'].remove()
+      }
+      if(children['topRightRot']){
+        children['topRightRot'].remove()
       }
     },
     drawScaleRectangle(){
@@ -269,8 +275,6 @@ export default {
           strokeWidth: 1,
       });
       pathBottomLeft.name = 'bottomLeft'
-
-      console.log(pathGeneral);
 
 
 
@@ -426,6 +430,117 @@ export default {
           }
         }
       }
+    },
+    drawRotationArrow(eventMove){
+
+      let cornersArr = this.scope.project.activeLayer.children.filter(i=>i.name == 'bottomLeft' || i.name == 'bottomRight' || i.name == 'topLeft' || i.name == 'topRight')
+      let distanceTotal = 10000
+      let index = null
+      for(let i=0; i<cornersArr.length; i++){
+        let distanceX = Math.abs(eventMove.point.x - cornersArr[i].position.x)
+        let distanceY = Math.abs(eventMove.point.y - cornersArr[i].position.y)
+        if(distanceY + distanceX < distanceTotal) {
+          distanceTotal = distanceY + distanceX
+          index = i
+        }
+      }
+      let corner = cornersArr[index]
+
+              switch(corner.name) {
+                case 'topRight':
+                  var path1 = new paper.Path.Arc(new paper.Point(corner.position.x-5,corner.position.y-30), new paper.Point(corner.position.x+18,corner.position.y-18), new paper.Point(corner.position.x+30,corner.position.y+5));
+                  path1.add(new paper.Point(corner.position.x+20, corner.position.y+5))
+                  path1.add(new paper.Point(corner.position.x+35, corner.position.y+20))
+                  path1.add(new paper.Point(corner.position.x+50, corner.position.y+5))
+                  path1.add(new paper.Point(corner.position.x+40, corner.position.y+5))
+                    var handleIn = new paper.Point(42, 0);
+                    var handleOut = new paper.Point(3, -3);
+                    var firstPoint = new paper.Point(corner.position.x+40, corner.position.y+5);
+                    var firstSegment = new paper.Segment(firstPoint, null, handleOut);
+                    var secondPoint = new paper.Point(corner.position.x-5,corner.position.y-40);
+                    var secondSegment = new paper.Segment(secondPoint, handleIn, null);
+                    path1.add(firstSegment)
+                    path1.add(secondSegment)
+                    path1.add(new paper.Point(corner.position.x-5, corner.position.y-50))
+                    path1.add(new paper.Point(corner.position.x-20, corner.position.y-35))
+                    path1.add(new paper.Point(corner.position.x-5,corner.position.y-20))
+                    path1.add(new paper.Point(corner.position.x-5,corner.position.y-30))
+
+                  path1.strokeColor = 'black';
+                  path1.fillColor = 'white';
+                  path1.name = 'topRightRot'
+                  break;
+                case 'topLeft':
+                  var path2 = new paper.Path.Arc(new paper.Point(corner.position.x+5,corner.position.y-30), new paper.Point(corner.position.x-18,corner.position.y-18), new paper.Point(corner.position.x-30,corner.position.y+5));
+                  path2.add(new paper.Point(corner.position.x-20, corner.position.y+5))
+                  path2.add(new paper.Point(corner.position.x-35, corner.position.y+20))
+                  path2.add(new paper.Point(corner.position.x-50, corner.position.y+5))
+                  path2.add(new paper.Point(corner.position.x-40, corner.position.y+5))
+                  var handleIn2 = new paper.Point(-42, 0);
+                  var handleOut2 = new paper.Point(-3, -3);
+                  var firstPoint2 = new paper.Point(corner.position.x-40, corner.position.y+5);
+                  var firstSegment2 = new paper.Segment(firstPoint2, null, handleOut2);
+                  var secondPoint2 = new paper.Point(corner.position.x+5,corner.position.y-40);
+                  var secondSegment2 = new paper.Segment(secondPoint2, handleIn2, null);
+                  path2.add(firstSegment2)
+                  path2.add(secondSegment2)
+                  path2.add(new paper.Point(corner.position.x+5, corner.position.y-50))
+                  path2.add(new paper.Point(corner.position.x+20, corner.position.y-35))
+                  path2.add(new paper.Point(corner.position.x+5,corner.position.y-20))
+                  path2.add(new paper.Point(corner.position.x+5,corner.position.y-30))
+                  path2.strokeColor = 'black';
+                  path2.fillColor = 'white';
+                  path2.name = 'topLeftRot'
+                  break;
+                case 'bottomRight':
+                  var path3 = new paper.Path.Arc(new paper.Point(corner.position.x+30,corner.position.y-5), new paper.Point(corner.position.x+18,corner.position.y+18), new paper.Point(corner.position.x-5,corner.position.y+30));
+                  path3.add(new paper.Point(corner.position.x-5, corner.position.y+20))
+                  path3.add(new paper.Point(corner.position.x-20, corner.position.y+35))
+                  path3.add(new paper.Point(corner.position.x-5, corner.position.y+50))
+                  path3.add(new paper.Point(corner.position.x-5, corner.position.y+40))
+                  var handleIn3 = new paper.Point(3, 3);
+                  var handleOut3 = new paper.Point(42, 0);
+                  var firstPoint3 = new paper.Point(corner.position.x-5, corner.position.y+40);
+                  var firstSegment3 = new paper.Segment(firstPoint3, null, handleOut3);
+                  var secondPoint3 = new paper.Point(corner.position.x+40,corner.position.y-5);
+                  var secondSegment3 = new paper.Segment(secondPoint3, handleIn3, null);
+                  path3.add(firstSegment3)
+                  path3.add(secondSegment3)
+                  path3.add(new paper.Point(corner.position.x+50, corner.position.y-5))
+                  path3.add(new paper.Point(corner.position.x+35, corner.position.y-20))
+                  path3.add(new paper.Point(corner.position.x+20, corner.position.y-5))
+                  path3.add(new paper.Point(corner.position.x+30, corner.position.y-5))
+                  path3.strokeColor = 'black';
+                  path3.fillColor = 'white';
+                  path3.name = 'bottomRightRot'
+                  break;
+                case 'bottomLeft':
+                  var path4 = new paper.Path.Arc(new paper.Point(corner.position.x-30,corner.position.y-5), new paper.Point(corner.position.x-18,corner.position.y+18), new paper.Point(corner.position.x+5,corner.position.y+30));
+                  path4.add(new paper.Point(corner.position.x+5, corner.position.y+20))
+                  path4.add(new paper.Point(corner.position.x+20, corner.position.y+35))
+                  path4.add(new paper.Point(corner.position.x+5, corner.position.y+50))
+                  path4.add(new paper.Point(corner.position.x+5, corner.position.y+40))
+                  var handleIn4 = new paper.Point(-3, 3);
+                  var handleOut4 = new paper.Point(-42, 0);
+                  var firstPoint4 = new paper.Point(corner.position.x+5, corner.position.y+40);
+                  var firstSegment4 = new paper.Segment(firstPoint4, null, handleOut4);
+                  var secondPoint4 = new paper.Point(corner.position.x-40,corner.position.y-5);
+                  var secondSegment4 = new paper.Segment(secondPoint4, handleIn4, null);
+                  path4.add(firstSegment4)
+                  path4.add(secondSegment4)
+                  path4.add(new paper.Point(corner.position.x-50, corner.position.y-5))
+
+                  path4.add(new paper.Point(corner.position.x-35, corner.position.y-20))
+
+                  path4.add(new paper.Point(corner.position.x-20, corner.position.y-5))
+                  path4.add(new paper.Point(corner.position.x-30, corner.position.y-5))
+                  path4.strokeColor = 'black';
+                  path4.fillColor = 'white';
+                  path4.name = 'bottomLeftRot'
+                  break;
+              }
+
+
     },
     cutCrossings(readyPointsGo){
 
@@ -592,20 +707,28 @@ export default {
       this.tool.onMouseDown = (event) => {
         this.strokeScaleNumber = null
         this.cornerScale = null
+        this.currentRotationPant = null
         if(!this.dragMode) {
           self.path = self.pathCreate(self.scope);
-          self.path.name = 'generalPath'
           self.path.add(event.point);
         } else {
           if(this.scaleMode){
 
             this.path2 = null;
             let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
-            if(hitResult && hitResult.type == 'stroke' && hitResult.item.name == "csaleRectangle"){
+            console.log(hitResult)
+            if(hitResult && (hitResult.type == 'stroke' || hitResult.type == 'segment' || hitResult.type == 'fill') && (hitResult.item.name == "topRightRot" || hitResult.item.name == "bottomRightRot" || hitResult.item.name == "bottomLeftRot" || hitResult.item.name == "topLeftRot")){
+              console.log(hitResult)
+              this.currentRotationPant = hitResult.item.name
+              console.log(this.scope.project._children[0]._children)
+              this.path2 = this.scope.project._children[0]._children.find(i=>i.className == "Path" && !i.name)
+              console.log(this.path2)
+            }
+            else if(hitResult && hitResult.type == 'stroke' && hitResult.item.name == "csaleRectangle"){
               this.strokeScaleNumber = hitResult.item.curves.findIndex(i=>i.point1.x == hitResult.location.curve.point1.x && i.point1.y == hitResult.location.curve.point1.y)
               this.path2 = this.scope.project._children[0]._children.find(i=>i.className == "Path")
             }
-            if(hitResult && hitResult.type == 'fill'){
+            else if(hitResult && hitResult.type == 'fill'){
               this.path2 = hitResult.item
             }
             let frameCircles = this.scope.project.activeLayer.children.filter(i=>i.name == 'bottomLeft' || i.name == 'bottomRight' || i.name == 'topLeft' || i.name == 'topRight')
@@ -626,6 +749,7 @@ export default {
             }
             if(!this.path2){
               this.changeScale()
+              this.deleteRotationArrows()
             }
           } else {
 
@@ -636,7 +760,7 @@ export default {
           this.segmentPointNumber = 0
           let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
 
-          if (!hitResult){
+          if (!hitResult && this.curveEditorMode){
             this.curveEditorHandler()
             return;
           }
@@ -729,19 +853,10 @@ export default {
 
       this.tool.onMouseMove= (event) => {
         if(this.scaleMode){
-          let cornersArr = this.scope.project.activeLayer.children.filter(i=>i.name == 'bottomLeft' || i.name == 'bottomRight' || i.name == 'topLeft' || i.name == 'topRight')
-          let distanceTotal = 10000
-          let index = null
-          for(let i=0; i<cornersArr.length; i++){
-            let distanceX = Math.abs(event.point.x - cornersArr[i].position.x)
-            let distanceY = Math.abs(event.point.y - cornersArr[i].position.y)
-            if(distanceY + distanceX < distanceTotal) {
-              distanceTotal = distanceY + distanceX
-              index = i
-            }
-          }
-          console.log(cornersArr[index].name)
 
+          this.deleteRotationArrows()
+          this.drawRotationArrow(event)
+          
 
 
 
@@ -783,8 +898,8 @@ export default {
               switch(this.cornerScale) {
                 case 'topRight':
                   if((event.delta.x > 0 && event.delta.y < 0) || (event.delta.x < 0 && event.delta.y > 0)){
-                    event.delta.x > 0 ? this.path2.scale(1.02, 1) : this.path2.scale(0.98, 1)
-                    event.delta.y < 0 ? this.path2.scale(1, 1.02) : this.path2.scale(1, 0.98)
+                    event.delta.x > 0 ? this.path2.scale(1.01, 1) : this.path2.scale(0.99, 1)
+                    event.delta.y < 0 ? this.path2.scale(1, 1.01) : this.path2.scale(1, 0.99)
                   }
                   break;
                 case 'topLeft':
@@ -808,11 +923,111 @@ export default {
               }
               this.deleteScaleRectangle()
               this.drawScaleRectangle()
+              console.log('444444444444444')
+              this.deleteRotationArrows()
+              this.drawRotationArrow(event)
             } else if (this.path2 && this.strokeScaleNumber === null) {
-              this.path2.position.x += event.delta.x;
-              this.path2.position.y += event.delta.y;
-              this.deleteScaleRectangle()
-              this.drawScaleRectangle()
+              if(this.currentRotationPant){
+
+                console.log(event.point.x)
+                console.log(event.point.y)
+                console.log('----------')
+                console.log(this.path2.bounds.center.x)
+                //this.deleteScaleRectangle()
+                //this.drawScaleRectangle()
+
+                let rectangle = this.scope.project._children[0]._children['csaleRectangle']
+                let arrow = this.scope.project._children[0]._children.find(i=>i.name == 'topRightRot' || i.name == 'topLeftRot' || i.name == 'bottomRightRot' || i.name == 'bottomLeftRot')
+                let topRight = this.scope.project._children[0]._children['topRight']
+                let topLeft = this.scope.project._children[0]._children['topLeft']
+                let bottomRight = this.scope.project._children[0]._children['bottomRight']
+                let bottomLeft = this.scope.project._children[0]._children['bottomLeft']
+
+                if (event.point.x<this.path2.bounds.center.x && event.point.y>this.path2.bounds.center.y){
+                  if(event.delta.x<0 || event.delta.y<0){
+                    this.path2.rotate(1.3);
+                    arrow.rotate(1.3,this.path2.bounds.center);
+                    rectangle.rotate(1.3,this.path2.bounds.center);
+                    bottomLeft.rotate(1.3,this.path2.bounds.center);
+                    bottomRight.rotate(1.3,this.path2.bounds.center);
+                    topLeft.rotate(1.3,this.path2.bounds.center);
+                    topRight.rotate(1.3,this.path2.bounds.center);
+                  } else {
+                    this.path2.rotate(-1.3);
+                    arrow.rotate(-1.3,this.path2.bounds.center);
+                    rectangle.rotate(-1.3,this.path2.bounds.center);
+                    bottomLeft.rotate(-1.3,this.path2.bounds.center);
+                    bottomRight.rotate(-1.3,this.path2.bounds.center);
+                    topLeft.rotate(-1.3,this.path2.bounds.center);
+                    topRight.rotate(-1.3,this.path2.bounds.center);
+                  }
+                }else if(event.point.y>this.path2.bounds.center.y){
+                  if(event.delta.x<0 || event.delta.y>0){
+                    this.path2.rotate(1.3);
+                    arrow.rotate(1.3,this.path2.bounds.center);
+                    rectangle.rotate(1.3,this.path2.bounds.center);
+                    bottomLeft.rotate(1.3,this.path2.bounds.center);
+                    bottomRight.rotate(1.3,this.path2.bounds.center);
+                    topLeft.rotate(1.3,this.path2.bounds.center);
+                    topRight.rotate(1.3,this.path2.bounds.center);
+                  } else {
+                    this.path2.rotate(-1.3);
+                    arrow.rotate(-1.3,this.path2.bounds.center);
+                    rectangle.rotate(-1.3,this.path2.bounds.center);
+                    bottomLeft.rotate(-1.3,this.path2.bounds.center);
+                    bottomRight.rotate(-1.3,this.path2.bounds.center);
+                    topLeft.rotate(-1.3,this.path2.bounds.center);
+                    topRight.rotate(-1.3,this.path2.bounds.center);
+                  }
+                } else if (event.point.x<this.path2.bounds.center.x){
+                  if(event.delta.x>0 || event.delta.y<0){
+                    this.path2.rotate(1.3);
+                    arrow.rotate(1.3,this.path2.bounds.center);
+                    rectangle.rotate(1.3,this.path2.bounds.center);
+                    bottomLeft.rotate(1.3,this.path2.bounds.center);
+                    bottomRight.rotate(1.3,this.path2.bounds.center);
+                    topLeft.rotate(1.3,this.path2.bounds.center);
+                    topRight.rotate(1.3,this.path2.bounds.center);
+                  } else {
+                    this.path2.rotate(-1.3);
+                    arrow.rotate(-1.3,this.path2.bounds.center);
+                    rectangle.rotate(-1.3,this.path2.bounds.center);
+                    bottomLeft.rotate(-1.3,this.path2.bounds.center);
+                    bottomRight.rotate(-1.3,this.path2.bounds.center);
+                    topLeft.rotate(-1.3,this.path2.bounds.center);
+                    topRight.rotate(-1.3,this.path2.bounds.center);
+                  }
+                } else {
+                  if(event.delta.x>0 || event.delta.y>0){
+                    this.path2.rotate(1.3);
+                    arrow.rotate(1.3,this.path2.bounds.center);
+                    rectangle.rotate(1.3,this.path2.bounds.center);
+                    bottomLeft.rotate(1.3,this.path2.bounds.center);
+                    bottomRight.rotate(1.3,this.path2.bounds.center);
+                    topLeft.rotate(1.3,this.path2.bounds.center);
+                    topRight.rotate(1.3,this.path2.bounds.center);
+                  } else {
+                    this.path2.rotate(-1.3);
+                    arrow.rotate(-1.3,this.path2.bounds.center);
+                    rectangle.rotate(-1.3,this.path2.bounds.center);
+                    bottomLeft.rotate(-1.3,this.path2.bounds.center);
+                    bottomRight.rotate(-1.3,this.path2.bounds.center);
+                    topLeft.rotate(-1.3,this.path2.bounds.center);
+                    topRight.rotate(-1.3,this.path2.bounds.center);
+                  }
+                }
+
+
+
+
+              } else {
+                this.path2.position.x += event.delta.x;
+                this.path2.position.y += event.delta.y;
+                this.deleteScaleRectangle()
+                this.drawScaleRectangle()
+                this.deleteRotationArrows()
+                this.drawRotationArrow(event)
+              }
             } else if(this.strokeScaleNumber !== null) {
               switch(this.strokeScaleNumber) {
                 case 0:
@@ -863,8 +1078,6 @@ export default {
           // завершаем линию
           self.path.add(new paper.Point(self.path.curves[0].point1._x, self.path.curves[0].point1._y))
           //this.scope.project._children[0]._children.find(i=>i.className == "Path").name = 'generalPath'
-          console.log(this.scope.project.activeLayer.children);
-          console.log(this.scope.project.activeLayer.children['generalPath']);
           // формируем массив пересечений
           this.crossedArr = self.path.getCrossings(self.path)
 
@@ -944,6 +1157,10 @@ export default {
           this.pathExtra = self.path
 
         } else {
+          if(this.scaleMode){
+            this.deleteScaleRectangle()
+            this.drawScaleRectangle()
+          }
           this.simpArr=this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData
           if(this.currentIndex != this.pathHistory.length-1){
             this.pathHistory.splice(this.currentIndex+1,Infinity)

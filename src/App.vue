@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-view/>
+      <router-view></router-view>
   </div>
 </template>
 
@@ -28,6 +28,7 @@ export default {
 *{
   margin: 0;
   padding: 0;
+  scroll-behavior: smooth;
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -83,4 +84,40 @@ export default {
     padding-right: 18px;
   }
 }
+/*.fade-leave-active {*/
+
+/*  transition: opacity 2s;*/
+/*}*/
+/*.fade-enter-active  {*/
+
+/*  transition: opacity 2s;*/
+/*  opacity: 0;*/
+/*}*/
+/*.fade-enter-to{*/
+
+/*  opacity: 1;*/
+/*}*/
+/*.fade-leave{*/
+
+/*}*/
+/*.fade-enter {*/
+/*}*/
+/*.fade-leave-to,.fade-enter-from {*/
+/*  opacity: 0;*/
+/*}*/
+
+
+
+
+
+/*.fade-enter-active,*/
+/*.fade-leave-active {*/
+/*  transition: opacity 1s ease;*/
+/*}*/
+
+/*.fade-enter-from,.fade-leave-to{*/
+/*  opacity: 0;*/
+/*}*/
+
+
 </style>

@@ -14,15 +14,18 @@
           <span class="description">Нарисуй форму, выбери раму, цвет и крепление. А мы приедем и установим его в удобное время</span>&nbsp;
         </div>
         <div class="second-row">
-          
-          <router-link to="/draw">
-            <button class="button">СОЗДАТЬ</button>
-          </router-link>
+
+
+
+              <button class="button" @click="toDrawPage">СОЗДАТЬ</button>
+
         </div>
 
-        <transition name="slide-fade">
-          <router-view></router-view>
-        </transition>
+
+
+
+
+
 
 
         <!-- <router-view v-slot="{Component}">
@@ -41,23 +44,38 @@ export default {
   name: 'TitlePage',
   methods: {
     goDraw(){
+    },
+    toDrawPage(){
+      this.$router.push('/draw')
     }
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="scss" scoped>
-.slide-fade-enter-active {
-  transition: all .3s ease;
-}
-.slide-fade-leave-active {
-  transition: all .5s cubic-bezier(1.0, 0.5, 0.8, 1.0);
-}
-.slide-fade-enter, .slide-fade-leave-active {
-  padding-left: 10px;
-  opacity: 0;
-}
+<style>
+/*.slide-fade-enter-active {*/
+/*  transition: all .3s ease;*/
+/*}*/
+/*.slide-fade-leave-active {*/
+/*  transition: all .5s cubic-bezier(1.0, 0.5, 0.8, 1.0);*/
+/*}*/
+/*.slide-fade-enter, .slide-fade-leave-active {*/
+/*  padding-left: 10px;*/
+/*  opacity: 0;*/
+/*}*/
+/*.fade-enter-active, .fade-leave-active {*/
+/*  transition-property: opacity;*/
+/*  transition-duration: .25s;*/
+/*}*/
+
+/*.fade-enter-active {*/
+/*  transition-delay: .25s;*/
+/*}*/
+
+/*.fade-enter, .fade-leave-active {*/
+/*  opacity: 0*/
+/*}*/
 .main{
   width: 100vw;
   height: 100vh;
