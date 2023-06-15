@@ -1,62 +1,60 @@
 <!--console.log('%c Oh my heavens! ', 'background: #222; color: #bada55');-->
 <template>
-  <div style="margin-top: 15px; margin-bottom: 15px;">
-  </div>
-  <div style=" display: flex; justify-content: center;">
-    <div  style="height: 80%; width: 45%;" >
-    <canvas key=countRerender :width="calcWidth()" :height="calcHeight()" :id="canvasId" class="canvas-style" resize="true" v-on:mousedown="mouseDown"/>
-    <!-- 1162 500    1745 -->
-    <!-- <canvas key=countRerender width="568" height="500" :id="canvasId" class="canvas-style" resize="true" v-on:mousedown="mouseDown"/> 860-->
-  </div>
-  <div class="buttons-block">
-    <div class="buttons-wrap">
-      <el-button @click="clearPaper" class="btn-wrap btn-tool">
-      <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
-        <Delete />
-      </el-icon>
-      ОЧИСТИТЬ</el-button>
-    <el-button @click="back" class="btn-wrap btn-tool">
-      <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
-        <Undo />
-      </el-icon>
-      НАЗАД
-    </el-button>
-    <el-button @click="forward" class="btn-wrap btn-tool">
-      <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
-        <Redo />
-      </el-icon>
-      ВПЕРЁД
-    </el-button>
-    <el-button @click="changeScale" class="btn-wrap btn-tool">
-      <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
-        <ArrowExpand />
-      </el-icon>
-      МАСШТАБ
-    </el-button>
+  <div style=" display: flex; justify-content: center; padding-left: 14%;">
+    <div>
+      <canvas :id="canvasId" resize="true" class="canvas-style" v-on:mousedown="mouseDown"/>
+      <!-- 1162 500    1745 -->
+      <!-- <canvas key=countRerender width="568" height="500" :id="canvasId" class="canvas-style" resize="true" v-on:mousedown="mouseDown"/> 860-->
 
-      <el-button @click="curveEditorHandler" class="btn-wrap btn-tool">
-        <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
-          <VectorCurve />
-        </el-icon>
-        КРИВЫЕ {{ curveEditorMode }}
-      </el-button>
-
-    <div style=" display: flex; flex-direction: column;">
-      <label for="volume">СГЛАЖИВАНИЕ</label>
-      <input type="range" id="volume" name="volume" min="2" max="30" :disabled="!dragMode || fewSegments" v-model="simpValue">
-      
     </div>
+    <div class="buttons-block">
+      <div class="buttons-wrap">
+        <el-button @click="clearPaper" class="btn-wrap btn-tool">
+          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+            <Delete />
+          </el-icon>
+          ОЧИСТИТЬ
+        </el-button>
+        <div style="display: flex; justify-content: space-between; width: 100%;">
+          <el-button @click="back" class="btn-wrap btn-tool-arrow">
+          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+            <Undo />
+          </el-icon>
+          НАЗАД
+        </el-button>
+        <el-button @click="forward" class="btn-wrap btn-tool-arrow">
+          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+            <Redo />
+          </el-icon>
+          ВПЕРЁД
+        </el-button>
+        </div>
 
-    <el-button @click="goToDrawPage">
-        NEXT
-      </el-button>
+
+        <el-button @click="changeScale" class="btn-wrap btn-tool">
+          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+            <ArrowExpand />
+          </el-icon>
+          МАСШТАБ
+        </el-button>
+        <el-button @click="curveEditorHandler" class="btn-wrap btn-tool">
+          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+            <VectorCurve />
+          </el-icon>
+          КРИВЫЕ {{ curveEditorMode }}
+        </el-button>
+
+        <div style=" display: flex; flex-direction: column;">
+          <label for="volume">СГЛАЖИВАНИЕ</label>
+          <input type="range" id="volume" name="volume" min="2" max="30" :disabled="!dragMode || fewSegments" v-model="simpValue">
+        </div>
+
+        <el-button @click="goToDrawPage">
+          NEXT
+        </el-button>
+      </div>
     </div>
-
-
-
   </div>
-  </div>
-
 </template>
 
 <script>
@@ -73,13 +71,10 @@ export default {
   },
   props: {
     canvasId:String,
-    clear: Boolean,
     dragMode: Boolean,
   },
-  emits: ['clearCanvas', 'clearSimp', 'clearHandler', 'nextButton'],
+  emits: ['clearSimp', 'clearHandler', 'nextButton'],
   data: () => ({
-    countRerender:1,
-
     simpArr: null,
     pathHistory: [],
     currentIndex: 0,
@@ -300,11 +295,27 @@ export default {
       // bottomRightShape.fillColor = 'rgba(0,255,217,0.2)';
     },
     calcHeight(){
-      return (document.body.clientWidth / 100) * 42
+      console.log((document.body.clientWidth / 100) * 40)
+      if(document.body.clientWidth<1500){
+        return (document.body.clientWidth / 100) * 50
+      }
+      return (document.body.clientWidth / 100) * 40
     },
     calcWidth(){
-      let num = (document.body.clientWidth / 100) * 64
+      if(document.body.clientWidth<1500){
+        let num = (document.body.clientWidth / 100) * 60
       return document.body.clientWidth - num
+      }
+      let num = (document.body.clientWidth / 100) * 67
+      return document.body.clientWidth - num
+    },
+    calcSize(){
+      console.log((document.body.clientWidth / 100) * 40)
+      if(document.body.clientWidth<1500){
+        return 'height: 80%; width: 59%;'
+        //return 'height: 80%; width: 45%;'
+      }
+      return 'height: 80%; width: 45%;'
     },
     deleteMiniPathCircles(){
       while(this.scope.project.activeLayer.children['circlePahtMini']){
@@ -408,7 +419,9 @@ export default {
       this.scaleMode = false
       this.curveEditorMode = false
       this.simpValue = 2
-      this.$emit('clearHandler')
+      this.currentArr = [];
+      this.finishArr = []
+      this.$emit('clearHandler',true)
     },
     back(){
       this.scaleMode = false
@@ -843,9 +856,12 @@ export default {
           }
 
 
-          this.movePath = hitResult.type == 'fill';
-          if (this.movePath)
-            this.scope.project.activeLayer.addChild(hitResult.item);
+              if(hitResult){
+                this.movePath = hitResult.type == 'fill';
+                if (this.movePath){
+                  this.scope.project.activeLayer.addChild(hitResult.item);
+                } 
+              }
             }
         }
       };
@@ -1103,7 +1119,7 @@ export default {
           }
 
 
-          this.$emit('clearCanvas')
+          this.$emit('clearHandler', false)
 
           self.path = new paper.Path()
           self.path.strokeColor = 'black';
@@ -1181,15 +1197,25 @@ export default {
     }
   },
   mounted() {
+    //this.$emit('rerender')
     this.scope = new paper.PaperScope();
     this.scope.setup(this.canvasId);
     console.log(document.body.clientWidth);
+    console.log(window.innerWidth);
+
+    this.$nextTick(function () {
+      let canvas = document.getElementsByClassName("canvas-style")[0]
+      console.log(canvas.width, canvas.height);
+      console.log(window.innerWidth);
+      if(window.innerWidth>1465){
+        this.scope.project.view.viewSize = ['600', '750'];
+      } else if(window.innerWidth>1024){
+        this.scope.project.view.viewSize = ['456', '570'];
+      }
+      
+  })
   },
   watch:{
-    clear(){
-      this.currentArr = [];
-      this.finishArr = []
-    },
     simpValue(val, oldVal){
 
       if(this.scope.project._children[0]._children.find(i=>i.className == "Path")){
@@ -1349,6 +1375,7 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
     flex-direction: column;
 }
 .buttons-wrap{
+  margin-left: 40px;
   display: flex;
     flex-direction: column;
     align-items: center;
@@ -1364,6 +1391,13 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
   width: 280px;
   height: 40px;
 }
+.btn-tool-arrow{
+  font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+    letter-spacing: 3px;
+  width: 130px;
+  height: 40px;
+}
 .el-button+.el-button {
     margin-left: 0px;
 }
@@ -1377,8 +1411,12 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
   color: white;
   background-color: #231f20;
 }
+canvas[resize] {
+  width: 600px !important;
+  height: 750px !important;
+
+}
 .canvas-style {
-  height: 350px;
   cursor: crosshair;
   border-radius: 10px;
   display: block;
@@ -1387,8 +1425,41 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
   -moz-box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
   box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
 }
-canvas[resize] {
-    width: 80%;
-    height: 100%;
+
+@media (max-width: 1465px) {
+  canvas[resize] {
+    width: 456px !important;
+    height: 570px !important;
+  
+}
+  .btn-tool{
+  font-size: 13px;
+  width: 230px;
+}
+.btn-tool-arrow{
+  font-size: 13px;
+  width: 110px;
+}
+}
+@media (max-width: 1024px) {
+  canvas[resize] {
+  width: 520px !important;
+  height: 650px !important;
+  
+}
+  .btn-tool{
+  font-family: 'Roboto', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  width: 220px;
+  height: 35px;
+}
+.btn-tool-arrow{
+  font-family: 'Roboto', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  width: 100px;
+  height: 35px;
+}
 }
 </style>

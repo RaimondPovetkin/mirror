@@ -2,13 +2,11 @@
   <div>
 
     <!-- canvas single -->
-    <div class="row" style="margin-top: 50px;">
+    <div class="row">
       <div class="col-2"/>
       <div class="col-8">
         <canvas-paper
-            :clear="clear"
             :dragMode="!canDraw"
-            @clearCanvas="reset"
             @clearSimp="clearSimp"
             :canvas-id="'canvas-one'"
             ref="childCanvas"
@@ -29,7 +27,6 @@ export default {
   name: "MasterPaper",
   data: () => ({
     canDraw: true,
-    clear: false
   }),
   props: {
     externalPathCurveCall: Boolean,
@@ -41,17 +38,9 @@ export default {
     changeIndex(val){
       this.$emit('changeIndex',1,val)
     },
-    reset() {
-      this.canDraw = false
+    clearHandler(can){
+      this.canDraw = can
       this.$refs.childCanvas.reset();
-      this.simpValue = 2;
-      this.clear = !this.clear
-    },
-    clearHandler(){
-      this.canDraw = true
-      this.$refs.childCanvas.reset();
-      this.simpValue = 2;
-      this.clear = !this.clear
     },
     clearSimp(){
       this.$refs.childCanvas.reset();
@@ -64,4 +53,17 @@ export default {
 </script>
 
 <style scoped>
+.row{
+  margin-top: 50px;
+}
+@media (max-width: 1300px) {
+  .row{
+    margin-top: 40px;
+  }
+}
+@media (max-width: 1024px) {
+  .row{
+    margin-top: 30px;
+  }
+}
 </style>
