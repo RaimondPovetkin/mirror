@@ -56,7 +56,7 @@ export default {
 .row{
   margin-top: 50px;
 }
-@media (max-width: 1300px) {
+@media (max-width: 1465px) {
   .row{
     margin-top: 40px;
   }

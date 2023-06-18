@@ -1,7 +1,12 @@
 <template>
   <div style="width: 100%; height:100%; display: flex;" class="draw-page">
     <router-link to="/">
-            <button class="button-home">Белое зеркало</button>
+      <el-button @mouseover="upHere = true" @mouseleave="upHere = false" class="button-home">
+        <el-icon class="arrow-left" :size="20" style="margin-top: -5px;" :style="upHere ? 'transform: translateX(-7px);  transition: .5s;': ''">
+          <ArrowLeft />
+        </el-icon>
+        <span v-if="widthScreen>890">Белое зеркало</span>
+      </el-button>
     </router-link>
 
     <div style="height:100vh; width: 100%">
@@ -38,17 +43,25 @@
 <script>
 import mainWrap from "@/components/MainWrap";
 import masterPaper from "@/components/MasterPaper";
+import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue';
 
 export default {
   name: "DrawPage",
   data: () => ({
+    upHere:false,
     pathCurve: null,
     pathCurveExternal: null,
-    externalPathCurveCall: false
+    externalPathCurveCall: false,
+    widthScreen:window.innerWidth
   }),
   components:{
-    masterPaper, mainWrap
+    masterPaper, mainWrap,ArrowLeft
   },
+  // computed: {
+  //   widthScreen(){
+  //     return window.innerWidth
+  //   }
+  // },
   methods: {
     externalPathCall(){
       this.externalPathCurveCall = true
@@ -108,8 +121,11 @@ export default {
 }
 .button-home:hover{
 cursor: pointer;
-color: white;
-background-color: #231f20;
+/* color: white;
+background-color: #231f20; */
+color: #231f20;
+  background-color: white;
+  border: 1px solid #231f20;
 }
 .el-carousel__container {
   height: 100%;
@@ -129,22 +145,31 @@ background-color: #231f20;
 .el-carousel__item:nth-child(2n + 1) {
   background-color: #d3dce6;
 } */
-@media (max-width: 1300px) {
+@media (max-width: 1465px) {
   .button-home{
-  width: 150px;
+  width: 160px;
   height: 40px;
   font-size: 12px;
   letter-spacing: 2px;
-  top: 8%;
+  top: 7%;
 }
 }
 @media (max-width: 1024px) {
   .button-home{
-  width: 140px;
+  width: 150px;
   height: 35px;
   font-size: 11px;
   letter-spacing: 2px;
-  top: 8%;
+  top: 6%;
 }
+}
+@media (max-width: 890px) {
+  .button-home{
+    width: 50px;
+    height: 35px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    top: 6%;
+  }
 }
 </style>

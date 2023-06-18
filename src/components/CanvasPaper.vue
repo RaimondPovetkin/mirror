@@ -3,18 +3,15 @@
   <div style=" display: flex; justify-content: center; padding-left: 14%;">
     <div>
       <canvas :id="canvasId" resize="true" class="canvas-style" v-on:mousedown="mouseDown"/>
-      <!-- 1162 500    1745 -->
-      <!-- <canvas key=countRerender width="568" height="500" :id="canvasId" class="canvas-style" resize="true" v-on:mousedown="mouseDown"/> 860-->
-
     </div>
     <div class="buttons-block">
       <div class="buttons-wrap">
-        <el-button @click="clearPaper" class="btn-wrap btn-tool">
+        <el-button :disabled="!dragMode" @click="clearPaper" class="btn-wrap btn-tool">
           <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
             <Delete />
           </el-icon>
           ОЧИСТИТЬ
-        </el-button>
+        </el-button>55{{sideScaleRectangleNumber}}55
         <div style="display: flex; justify-content: space-between; width: 100%;">
           <el-button @click="back" class="btn-wrap btn-tool-arrow">
           <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
@@ -29,8 +26,6 @@
           ВПЕРЁД
         </el-button>
         </div>
-
-
         <el-button @click="changeScale" class="btn-wrap btn-tool">
           <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
             <ArrowExpand />
@@ -43,12 +38,10 @@
           </el-icon>
           КРИВЫЕ {{ curveEditorMode }}
         </el-button>
-
         <div style=" display: flex; flex-direction: column;">
           <label for="volume">СГЛАЖИВАНИЕ</label>
           <input type="range" id="volume" name="volume" min="2" max="30" :disabled="!dragMode || fewSegments" v-model="simpValue">
         </div>
-
         <el-button @click="goToDrawPage">
           NEXT
         </el-button>
@@ -75,25 +68,19 @@ export default {
   },
   emits: ['clearSimp', 'clearHandler', 'nextButton'],
   data: () => ({
-    simpArr: null,
     pathHistory: [],
     currentIndex: 0,
-
-    pathExtra:null,
-
+    pathSelected: false,
     curveEditorMode: false,
     scaleMode: false,
-    currentRotationPant: null,
-    strokeScaleNumber: null,
+    currentRotationPoint: null,
+    sideScaleRectangleNumber: null,
     cornerScale: null,
-
     simpValue: 2,
     fewSegments: false,
     segment: null,
     segmentDot: null,
     segmentPointNumber: 0,
-    movePath: false,
-    path2: null,
     hitOptions: {
       segments: true,
       stroke: true,
@@ -107,19 +94,11 @@ export default {
       tolerance: 1
     },
 
-
-    crossed: false,
-    loop: 0,
-    currentArr: [],
+    loop: 0, // кол-во выполнения функции обрезания
     crossedArr: [],
     FinArr: [],
-    startCoord: {
-      x: null,
-      y: null,
-    },
     path: null,
-    scope: null,
-    finishArr: []
+    scope: null
   }),
   methods: {
     curveEditorHandler(){
@@ -132,6 +111,7 @@ export default {
       } else {
         if(this.scaleMode){
           this.changeScale()
+          this.deleteRotationArrows()
         }
         self.path.fullySelected = true;
         this.drawCirclesCurves()
@@ -146,58 +126,78 @@ export default {
       console.log(self.path.getCrossings(self.path))
       //this.$emit('nextButton',this.scope.project._children[0]._children.find(i=>i.className == "Path").segments)
     },
-    toNormalSizeChildren(){
-      //this.scope.project._children[0]._children.find(i=>i.id == hitResult.item.id).radius = 20
-      for(let i=0; i< this.scope.project._children[0]._children.length;i++){
-        if(this.scope.project._children[0]._children[i].type == "circle" && this.scope.project._children[0]._children[i].radius > 5){
-          this.scope.project._children[0]._children[i].radius = 10
-        } else if(!this.scope.project._children[0]._children[i].type){
-          this.scope.project._children[0]._children.find(i=>i.className == "Path").strokeWidth = 1
+    changeNormalSizeChildren(event){
+      let childrens =  this.scope.project._children[0]._children
+
+      // приводим детей к обычному виду
+      for(let i=0; i< childrens.length;i++){
+        if(childrens[i].type == "circle" && childrens[i].radius > 5){
+          childrens[i].radius = 10
+        } else if(!childrens[i].type){
+          childrens.find(i=>i.className == "Path").strokeWidth = 1
         }
       }
-    },  
-    deleteScaleRectangle(){
-      var children = this.scope.project.activeLayer.children;
-      if(children['csaleRectangle'] && children['topLeft'] && children['topRight'] && children['bottomLeft'] && children['bottomRight']){
-        children['csaleRectangle'].remove()
-        children['topLeft'].remove()
-        children['topRight'].remove()
-        children['bottomLeft'].remove()
-        children['bottomRight'].remove()
+      // увеличиваем детей при наведении
+      let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
+      if(hitResult && hitResult.item.type == 'circle' && hitResult.item.radius == 10){
+        childrens.find(i=>i.id == hitResult.item.id).radius = 15
+      } else if(hitResult && hitResult.type == 'stroke' && !this.scaleMode) {
+        childrens.find(i=>i.className == "Path").strokeWidth = 3;
       }
     },
-    deleteRotationArrows(){
-      var children = this.scope.project.activeLayer.children;
-      if(children['bottomLeftRot']){
-        children['bottomLeftRot'].remove()
+    deleteScaleRectangle(){// удаляем прямоугольник и все стрелочки масштаба
+      let children = this.scope.project.activeLayer.children;
+      if(children['csaleRectangle'] && children['topLeft'] && children['topRight'] && children['bottomLeft'] && children['bottomRight']){
+        if(children['csaleRectangle'])children['csaleRectangle'].remove()
+        if(children['topLeft'])children['topLeft'].remove()
+        if(children['topRight'])children['topRight'].remove()
+        if(children['bottomLeft'])children['bottomLeft'].remove()
+        if(children['bottomRight'])children['bottomRight'].remove()
+        if(children['topTriangle'])children['topTriangle'].remove()
+        if(children['bottomTriangle'])children['bottomTriangle'].remove()
+        if(children['leftTriangle'])children['leftTriangle'].remove()
+        if(children['rightTriangle'])children['rightTriangle'].remove()
       }
-      if(children['bottomRightRot']){
-        children['bottomRightRot'].remove()
-      }
-      if(children['topLeftRot']){
-        children['topLeftRot'].remove()
-      }
-      if(children['topRightRot']){
-        children['topRightRot'].remove()
-      }
+    },
+    deleteRotationArrows(){// удаляем стрелочки вращения
+      let children = this.scope.project.activeLayer.children;
+      if(children['bottomLeftRot'])children['bottomLeftRot'].remove()
+      if(children['bottomRightRot'])children['bottomRightRot'].remove()
+      if(children['topLeftRot'])children['topLeftRot'].remove()
+      if(children['topRightRot'])children['topRightRot'].remove()
     },
     drawScaleRectangle(){
-
       let pathGeneral = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-      let topLeft = pathGeneral.bounds
-
-      var rectangle = new paper.Rectangle(new paper.Point(topLeft.topLeft.x, topLeft.topLeft.y), new paper.Size(topLeft.width, topLeft.height));
+      // рисуем сам прямоугольник
+      var rectangle = new paper.Rectangle(new paper.Point(pathGeneral.bounds.topLeft.x, pathGeneral.bounds.topLeft.y), new paper.Size(pathGeneral.bounds.width, pathGeneral.bounds.height));
       var path = new paper.Path.Rectangle(rectangle);
       path.name = 'csaleRectangle'
       path.strokeColor = 'black';
       path.dashArray = [10, 12];
+      // рисуем треугольники по бокам
+      let rightTriangle = new paper.Path.RegularPolygon(new paper.Point(pathGeneral.bounds.rightCenter.x+6,pathGeneral.bounds.rightCenter.y), 3, 8);
+      rightTriangle.fillColor = 'white';
+      rightTriangle.strokeColor = 'black';
+      rightTriangle.name = 'rightTriangle'
+      rightTriangle.rotate(90);
 
-      // var triangle = new paper.Path.RegularPolygon(new paper.Point(pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y), 3, 10);
-      // triangle.fillColor = '#e9e9ff';
-      // triangle.strokeColor = 'rgba(0,38,32,0.5)';
-      // triangle.name = 'topLeft'
-      // triangle.rotate(75);
+      let topTriangle = new paper.Path.RegularPolygon(new paper.Point(pathGeneral.bounds.topCenter.x,pathGeneral.bounds.topCenter.y-4), 3, 8);
+      topTriangle.fillColor = 'white';
+      topTriangle.strokeColor = 'black';
+      topTriangle.name = 'topTriangle'
 
+      let leftTriangle = new paper.Path.RegularPolygon(new paper.Point(pathGeneral.bounds.leftCenter.x-6,pathGeneral.bounds.leftCenter.y), 3, 8);
+      leftTriangle.fillColor = 'white';
+      leftTriangle.strokeColor = 'black';
+      leftTriangle.name = 'leftTriangle'
+      leftTriangle.rotate(-90);
+
+      let bottomTriangle = new paper.Path.RegularPolygon(new paper.Point(pathGeneral.bounds.bottomCenter.x,pathGeneral.bounds.bottomCenter.y+8), 3, 8);
+      bottomTriangle.fillColor = 'white';
+      bottomTriangle.strokeColor = 'black';
+      bottomTriangle.name = 'bottomTriangle'
+      bottomTriangle.rotate(180);
+      // рисуем треугольники по углам
       let pathTopLeft = new paper.Path({
           segments: [
             [pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y], 
@@ -213,9 +213,6 @@ export default {
           strokeWidth: 1,
       });
       pathTopLeft.name = 'topLeft'
-
-
-
 
       let pathTopRight = new paper.Path({
           segments: [
@@ -233,9 +230,6 @@ export default {
       });
       pathTopRight.name = 'topRight'
 
-
-
-
       let pathBottomRight = new paper.Path({
           segments: [
             [pathGeneral.bounds.bottomRight.x,pathGeneral.bounds.bottomRight.y], 
@@ -252,9 +246,6 @@ export default {
       });
       pathBottomRight.name = 'bottomRight'
 
-
-
-
       let pathBottomLeft = new paper.Path({
           segments: [
             [pathGeneral.bounds.bottomLeft.x,pathGeneral.bounds.bottomLeft.y], 
@@ -270,52 +261,6 @@ export default {
           strokeWidth: 1,
       });
       pathBottomLeft.name = 'bottomLeft'
-
-
-
-
-      // var topLeftShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.topLeft.x,pathGeneral.bounds.topLeft.y), 5);
-      // topLeftShape.name = 'topLeft'
-      // topLeftShape.strokeColor = 'rgba(0,38,32,0.5)';
-      // topLeftShape.fillColor = 'rgba(0,255,217,0.2)';
-
-      // var topRightShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.topRight.x,pathGeneral.bounds.topRight.y), 5);
-      // topRightShape.name = 'topRight'
-      // topRightShape.strokeColor = 'rgba(0,38,32,0.5)';
-      // topRightShape.fillColor = 'rgba(0,255,217,0.2)';
-
-      // var bottomLeftShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.bottomLeft.x,pathGeneral.bounds.bottomLeft.y), 5);
-      // bottomLeftShape.name = 'bottomLeft'
-      // bottomLeftShape.strokeColor = 'rgba(0,38,32,0.5)';
-      // bottomLeftShape.fillColor = 'rgba(0,255,217,0.2)';
-
-      // var bottomRightShape = new paper.Shape.Circle(new paper.Point(pathGeneral.bounds.bottomRight.x,pathGeneral.bounds.bottomRight.y), 5);
-      // bottomRightShape.name = 'bottomRight'
-      // bottomRightShape.strokeColor = 'rgba(0,38,32,0.5)';
-      // bottomRightShape.fillColor = 'rgba(0,255,217,0.2)';
-    },
-    calcHeight(){
-      console.log((document.body.clientWidth / 100) * 40)
-      if(document.body.clientWidth<1500){
-        return (document.body.clientWidth / 100) * 50
-      }
-      return (document.body.clientWidth / 100) * 40
-    },
-    calcWidth(){
-      if(document.body.clientWidth<1500){
-        let num = (document.body.clientWidth / 100) * 60
-      return document.body.clientWidth - num
-      }
-      let num = (document.body.clientWidth / 100) * 67
-      return document.body.clientWidth - num
-    },
-    calcSize(){
-      console.log((document.body.clientWidth / 100) * 40)
-      if(document.body.clientWidth<1500){
-        return 'height: 80%; width: 59%;'
-        //return 'height: 80%; width: 45%;'
-      }
-      return 'height: 80%; width: 45%;'
     },
     deleteMiniPathCircles(){
       while(this.scope.project.activeLayer.children['circlePahtMini']){
@@ -330,20 +275,12 @@ export default {
     changeScale(){
       if(this.scaleMode) {
         this.scaleMode = false
-        var children = this.scope.project.activeLayer.children;
-        children['csaleRectangle'].remove()
-        children['topLeft'].remove()
-        children['topRight'].remove()
-        children['bottomLeft'].remove()
-        children['bottomRight'].remove()
+        this.deleteScaleRectangle()
         this.drawCircles()
       } else {
         this.scaleMode = true
-
         this.deleteScaleRectangle()
-
         this.drawScaleRectangle()
-
         this.deletePathCircles()
         let self = this;
         self.path.fullySelected = false;
@@ -369,10 +306,12 @@ export default {
       }
     },
     drawCirclesCurves(){
+      //let self = this;
       if(!this.scaleMode){
         let path = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-        console.log(path)
+        console.log(this.scope.project._children[0])
         if(path._segments){
+          //path.fullySelected = true;
           for(let i=0 ; i<path._segments.length ; i++){
 
             var shape192 = new paper.Shape.Circle(new paper.Point(path._segments[i].curve.points[1].x,path._segments[i].curve.points[1].y), 3);
@@ -413,14 +352,11 @@ export default {
       }
     },
     clearPaper(){
-      this.simpArr= null
       this.pathHistory= []
       this.currentIndex= 0
       this.scaleMode = false
       this.curveEditorMode = false
       this.simpValue = 2
-      this.currentArr = [];
-      this.finishArr = []
       this.$emit('clearHandler',true)
     },
     back(){
@@ -459,99 +395,100 @@ export default {
       }
       let corner = cornersArr[index]
 
-              switch(corner.name) {
-                case 'topRight':
-                  var path1 = new paper.Path.Arc(new paper.Point(corner.position.x-5,corner.position.y-30), new paper.Point(corner.position.x+18,corner.position.y-18), new paper.Point(corner.position.x+30,corner.position.y+5));
-                  path1.add(new paper.Point(corner.position.x+20, corner.position.y+5))
-                  path1.add(new paper.Point(corner.position.x+35, corner.position.y+20))
-                  path1.add(new paper.Point(corner.position.x+50, corner.position.y+5))
-                  path1.add(new paper.Point(corner.position.x+40, corner.position.y+5))
-                    var handleIn = new paper.Point(42, 0);
-                    var handleOut = new paper.Point(3, -3);
-                    var firstPoint = new paper.Point(corner.position.x+40, corner.position.y+5);
-                    var firstSegment = new paper.Segment(firstPoint, null, handleOut);
-                    var secondPoint = new paper.Point(corner.position.x-5,corner.position.y-40);
-                    var secondSegment = new paper.Segment(secondPoint, handleIn, null);
-                    path1.add(firstSegment)
-                    path1.add(secondSegment)
-                    path1.add(new paper.Point(corner.position.x-5, corner.position.y-50))
-                    path1.add(new paper.Point(corner.position.x-20, corner.position.y-35))
-                    path1.add(new paper.Point(corner.position.x-5,corner.position.y-20))
-                    path1.add(new paper.Point(corner.position.x-5,corner.position.y-30))
+      if (corner){
+        switch(corner.name) {
+          case 'topRight':
+            var topRightRotPath = new paper.Path.Arc(new paper.Point(corner.position.x-5,corner.position.y-30), new paper.Point(corner.position.x+18,corner.position.y-18), new paper.Point(corner.position.x+30,corner.position.y+5));
+            topRightRotPath.add(new paper.Point(corner.position.x+20, corner.position.y+5))
+            topRightRotPath.add(new paper.Point(corner.position.x+35, corner.position.y+20))
+            topRightRotPath.add(new paper.Point(corner.position.x+50, corner.position.y+5))
+            topRightRotPath.add(new paper.Point(corner.position.x+40, corner.position.y+5))
+            var handleIn = new paper.Point(42, 0);
+            var handleOut = new paper.Point(3, -3);
+            var firstPoint = new paper.Point(corner.position.x+40, corner.position.y+5);
+            var firstSegment = new paper.Segment(firstPoint, null, handleOut);
+            var secondPoint = new paper.Point(corner.position.x-5,corner.position.y-40);
+            var secondSegment = new paper.Segment(secondPoint, handleIn, null);
+            topRightRotPath.add(firstSegment)
+            topRightRotPath.add(secondSegment)
+            topRightRotPath.add(new paper.Point(corner.position.x-5, corner.position.y-50))
+            topRightRotPath.add(new paper.Point(corner.position.x-20, corner.position.y-35))
+            topRightRotPath.add(new paper.Point(corner.position.x-5,corner.position.y-20))
+            topRightRotPath.add(new paper.Point(corner.position.x-5,corner.position.y-30))
 
-                  path1.strokeColor = 'black';
-                  path1.fillColor = 'white';
-                  path1.name = 'topRightRot'
-                  break;
-                case 'topLeft':
-                  var path2 = new paper.Path.Arc(new paper.Point(corner.position.x+5,corner.position.y-30), new paper.Point(corner.position.x-18,corner.position.y-18), new paper.Point(corner.position.x-30,corner.position.y+5));
-                  path2.add(new paper.Point(corner.position.x-20, corner.position.y+5))
-                  path2.add(new paper.Point(corner.position.x-35, corner.position.y+20))
-                  path2.add(new paper.Point(corner.position.x-50, corner.position.y+5))
-                  path2.add(new paper.Point(corner.position.x-40, corner.position.y+5))
-                  var handleIn2 = new paper.Point(-42, 0);
-                  var handleOut2 = new paper.Point(-3, -3);
-                  var firstPoint2 = new paper.Point(corner.position.x-40, corner.position.y+5);
-                  var firstSegment2 = new paper.Segment(firstPoint2, null, handleOut2);
-                  var secondPoint2 = new paper.Point(corner.position.x+5,corner.position.y-40);
-                  var secondSegment2 = new paper.Segment(secondPoint2, handleIn2, null);
-                  path2.add(firstSegment2)
-                  path2.add(secondSegment2)
-                  path2.add(new paper.Point(corner.position.x+5, corner.position.y-50))
-                  path2.add(new paper.Point(corner.position.x+20, corner.position.y-35))
-                  path2.add(new paper.Point(corner.position.x+5,corner.position.y-20))
-                  path2.add(new paper.Point(corner.position.x+5,corner.position.y-30))
-                  path2.strokeColor = 'black';
-                  path2.fillColor = 'white';
-                  path2.name = 'topLeftRot'
-                  break;
-                case 'bottomRight':
-                  var path3 = new paper.Path.Arc(new paper.Point(corner.position.x+30,corner.position.y-5), new paper.Point(corner.position.x+18,corner.position.y+18), new paper.Point(corner.position.x-5,corner.position.y+30));
-                  path3.add(new paper.Point(corner.position.x-5, corner.position.y+20))
-                  path3.add(new paper.Point(corner.position.x-20, corner.position.y+35))
-                  path3.add(new paper.Point(corner.position.x-5, corner.position.y+50))
-                  path3.add(new paper.Point(corner.position.x-5, corner.position.y+40))
-                  var handleIn3 = new paper.Point(3, 3);
-                  var handleOut3 = new paper.Point(42, 0);
-                  var firstPoint3 = new paper.Point(corner.position.x-5, corner.position.y+40);
-                  var firstSegment3 = new paper.Segment(firstPoint3, null, handleOut3);
-                  var secondPoint3 = new paper.Point(corner.position.x+40,corner.position.y-5);
-                  var secondSegment3 = new paper.Segment(secondPoint3, handleIn3, null);
-                  path3.add(firstSegment3)
-                  path3.add(secondSegment3)
-                  path3.add(new paper.Point(corner.position.x+50, corner.position.y-5))
-                  path3.add(new paper.Point(corner.position.x+35, corner.position.y-20))
-                  path3.add(new paper.Point(corner.position.x+20, corner.position.y-5))
-                  path3.add(new paper.Point(corner.position.x+30, corner.position.y-5))
-                  path3.strokeColor = 'black';
-                  path3.fillColor = 'white';
-                  path3.name = 'bottomRightRot'
-                  break;
-                case 'bottomLeft':
-                  var path4 = new paper.Path.Arc(new paper.Point(corner.position.x-30,corner.position.y-5), new paper.Point(corner.position.x-18,corner.position.y+18), new paper.Point(corner.position.x+5,corner.position.y+30));
-                  path4.add(new paper.Point(corner.position.x+5, corner.position.y+20))
-                  path4.add(new paper.Point(corner.position.x+20, corner.position.y+35))
-                  path4.add(new paper.Point(corner.position.x+5, corner.position.y+50))
-                  path4.add(new paper.Point(corner.position.x+5, corner.position.y+40))
-                  var handleIn4 = new paper.Point(-3, 3);
-                  var handleOut4 = new paper.Point(-42, 0);
-                  var firstPoint4 = new paper.Point(corner.position.x+5, corner.position.y+40);
-                  var firstSegment4 = new paper.Segment(firstPoint4, null, handleOut4);
-                  var secondPoint4 = new paper.Point(corner.position.x-40,corner.position.y-5);
-                  var secondSegment4 = new paper.Segment(secondPoint4, handleIn4, null);
-                  path4.add(firstSegment4)
-                  path4.add(secondSegment4)
-                  path4.add(new paper.Point(corner.position.x-50, corner.position.y-5))
+            topRightRotPath.strokeColor = 'black';
+            topRightRotPath.fillColor = 'white';
+            topRightRotPath.name = 'topRightRot'
+            break;
+          case 'topLeft':
+            var topLeftRotPath = new paper.Path.Arc(new paper.Point(corner.position.x+5,corner.position.y-30), new paper.Point(corner.position.x-18,corner.position.y-18), new paper.Point(corner.position.x-30,corner.position.y+5));
+            topLeftRotPath.add(new paper.Point(corner.position.x-20, corner.position.y+5))
+            topLeftRotPath.add(new paper.Point(corner.position.x-35, corner.position.y+20))
+            topLeftRotPath.add(new paper.Point(corner.position.x-50, corner.position.y+5))
+            topLeftRotPath.add(new paper.Point(corner.position.x-40, corner.position.y+5))
+            var handleIn2 = new paper.Point(-42, 0);
+            var handleOut2 = new paper.Point(-3, -3);
+            var firstPoint2 = new paper.Point(corner.position.x-40, corner.position.y+5);
+            var firstSegment2 = new paper.Segment(firstPoint2, null, handleOut2);
+            var secondPoint2 = new paper.Point(corner.position.x+5,corner.position.y-40);
+            var secondSegment2 = new paper.Segment(secondPoint2, handleIn2, null);
+            topLeftRotPath.add(firstSegment2)
+            topLeftRotPath.add(secondSegment2)
+            topLeftRotPath.add(new paper.Point(corner.position.x+5, corner.position.y-50))
+            topLeftRotPath.add(new paper.Point(corner.position.x+20, corner.position.y-35))
+            topLeftRotPath.add(new paper.Point(corner.position.x+5,corner.position.y-20))
+            topLeftRotPath.add(new paper.Point(corner.position.x+5,corner.position.y-30))
+            topLeftRotPath.strokeColor = 'black';
+            topLeftRotPath.fillColor = 'white';
+            topLeftRotPath.name = 'topLeftRot'
+            break;
+          case 'bottomRight':
+            var bottomRightRotPath = new paper.Path.Arc(new paper.Point(corner.position.x+30,corner.position.y-5), new paper.Point(corner.position.x+18,corner.position.y+18), new paper.Point(corner.position.x-5,corner.position.y+30));
+            bottomRightRotPath.add(new paper.Point(corner.position.x-5, corner.position.y+20))
+            bottomRightRotPath.add(new paper.Point(corner.position.x-20, corner.position.y+35))
+            bottomRightRotPath.add(new paper.Point(corner.position.x-5, corner.position.y+50))
+            bottomRightRotPath.add(new paper.Point(corner.position.x-5, corner.position.y+40))
+            var handleIn3 = new paper.Point(3, 3);
+            var handleOut3 = new paper.Point(42, 0);
+            var firstPoint3 = new paper.Point(corner.position.x-5, corner.position.y+40);
+            var firstSegment3 = new paper.Segment(firstPoint3, null, handleOut3);
+            var secondPoint3 = new paper.Point(corner.position.x+40,corner.position.y-5);
+            var secondSegment3 = new paper.Segment(secondPoint3, handleIn3, null);
+            bottomRightRotPath.add(firstSegment3)
+            bottomRightRotPath.add(secondSegment3)
+            bottomRightRotPath.add(new paper.Point(corner.position.x+50, corner.position.y-5))
+            bottomRightRotPath.add(new paper.Point(corner.position.x+35, corner.position.y-20))
+            bottomRightRotPath.add(new paper.Point(corner.position.x+20, corner.position.y-5))
+            bottomRightRotPath.add(new paper.Point(corner.position.x+30, corner.position.y-5))
+            bottomRightRotPath.strokeColor = 'black';
+            bottomRightRotPath.fillColor = 'white';
+            bottomRightRotPath.name = 'bottomRightRot'
+            break;
+          case 'bottomLeft':
+            var bottomLeftRotPath = new paper.Path.Arc(new paper.Point(corner.position.x-30,corner.position.y-5), new paper.Point(corner.position.x-18,corner.position.y+18), new paper.Point(corner.position.x+5,corner.position.y+30));
+            bottomLeftRotPath.add(new paper.Point(corner.position.x+5, corner.position.y+20))
+            bottomLeftRotPath.add(new paper.Point(corner.position.x+20, corner.position.y+35))
+            bottomLeftRotPath.add(new paper.Point(corner.position.x+5, corner.position.y+50))
+            bottomLeftRotPath.add(new paper.Point(corner.position.x+5, corner.position.y+40))
+            var handleIn4 = new paper.Point(-3, 3);
+            var handleOut4 = new paper.Point(-42, 0);
+            var firstPoint4 = new paper.Point(corner.position.x+5, corner.position.y+40);
+            var firstSegment4 = new paper.Segment(firstPoint4, null, handleOut4);
+            var secondPoint4 = new paper.Point(corner.position.x-40,corner.position.y-5);
+            var secondSegment4 = new paper.Segment(secondPoint4, handleIn4, null);
+            bottomLeftRotPath.add(firstSegment4)
+            bottomLeftRotPath.add(secondSegment4)
+            bottomLeftRotPath.add(new paper.Point(corner.position.x-50, corner.position.y-5))
+            bottomLeftRotPath.add(new paper.Point(corner.position.x-35, corner.position.y-20))
+            bottomLeftRotPath.add(new paper.Point(corner.position.x-20, corner.position.y-5))
+            bottomLeftRotPath.add(new paper.Point(corner.position.x-30, corner.position.y-5))
+            bottomLeftRotPath.strokeColor = 'black';
+            bottomLeftRotPath.fillColor = 'white';
+            bottomLeftRotPath.name = 'bottomLeftRot'
+            break;
+        }
+      }
 
-                  path4.add(new paper.Point(corner.position.x-35, corner.position.y-20))
-
-                  path4.add(new paper.Point(corner.position.x-20, corner.position.y-5))
-                  path4.add(new paper.Point(corner.position.x-30, corner.position.y-5))
-                  path4.strokeColor = 'black';
-                  path4.fillColor = 'white';
-                  path4.name = 'bottomLeftRot'
-                  break;
-              }
 
 
     },
@@ -712,245 +649,165 @@ export default {
     mouseDown() {
       let self = this;
       if(!this.dragMode){
-        if (this.path) {
-          //this.path.selected = false;
-        }
         this.tool = this.createTool(this.scope);
       }
       this.tool.onMouseDown = (event) => {
-        this.strokeScaleNumber = null
-        this.cornerScale = null
-        this.currentRotationPant = null
         if(!this.dragMode) {
+          //первая точка нашей фигуры
           self.path = self.pathCreate(self.scope);
           self.path.add(event.point);
         } else {
+          this.pathSelected = false
           if(this.scaleMode){
-
-            this.path2 = null;
+            this.sideScaleRectangleNumber = null//сторона прямоугольника (при масштабировании)
+            this.cornerScale = null// угол за который тянем (при масштабировании)
+            this.currentRotationPoint = null// стрелка за которую тянем (при вращении)
             let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
-            console.log(hitResult)
-            if(hitResult && (hitResult.type == 'stroke' || hitResult.type == 'segment' || hitResult.type == 'fill') && (hitResult.item.name == "topRightRot" || hitResult.item.name == "bottomRightRot" || hitResult.item.name == "bottomLeftRot" || hitResult.item.name == "topLeftRot")){
-              console.log(hitResult)
-              this.currentRotationPant = hitResult.item.name
-              console.log(this.scope.project._children[0]._children)
-              this.path2 = this.scope.project._children[0]._children.find(i=>i.className == "Path" && !i.name)
-              console.log(this.path2)
-            }
-            else if(hitResult && hitResult.type == 'stroke' && hitResult.item.name == "csaleRectangle"){
-              this.strokeScaleNumber = hitResult.item.curves.findIndex(i=>i.point1.x == hitResult.location.curve.point1.x && i.point1.y == hitResult.location.curve.point1.y)
-              this.path2 = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-            }
-            else if(hitResult && hitResult.type == 'fill'){
-              this.path2 = hitResult.item
-            }
-            let frameCircles = this.scope.project.activeLayer.children.filter(i=>i.name == 'bottomLeft' || i.name == 'bottomRight' || i.name == 'topLeft' || i.name == 'topRight')
-            let index = null
-            let distanceTotal = 10000
-            for(let i=0; i<frameCircles.length; i++){
-              let distanceX = Math.abs(event.point.x - frameCircles[i].position.x)
-              let distanceY = Math.abs(event.point.y - frameCircles[i].position.y)
-              if(distanceY + distanceX < distanceTotal) {
-                distanceTotal = distanceY + distanceX
-                index = i
+            if(hitResult){
+              let hitResultType = hitResult.type
+              // когда кликаем по самой фигуре
+              if(!hitResult.item.name && hitResultType == 'fill'){
+                this.pathSelected = true
               }
-            }
-            if(distanceTotal<40){
-              let currr = frameCircles[index]
-              this.cornerScale = currr.name
-              this.path2 = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-            }
-            if(!this.path2){
-              this.changeScale()
-              this.deleteRotationArrows()
-            }
-          } else {
-
-
-          this.segment = null;
-          this.path2 = null;
-          this.segmentDot = null;
-          this.segmentPointNumber = 0
-          let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
-
-          if (!hitResult && this.curveEditorMode){
-            this.curveEditorHandler()
-            return;
-          }
-
-          if (event.modifiers.shift) {
-            if (hitResult.type == 'segment') {
-              hitResult.segment.remove();
-            }
-            return;
-          }
-
-
-          if (hitResult) {
-            this.path2 = hitResult.item;
-            if(hitResult.type == 'fill' || hitResult.item._type == "circle"){
-              this.path2 = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-
-
-
-              if(hitResult.item._type == "circle"){
-                if(hitResult.item.radius == 3){
-
-                  let index = null
-                  let distanceTotal = 10000
-                  for(let i=0; i<this.path2._segments.length; i++){
-                    let distanceX = Math.abs(hitResult.item.position.x - this.path2._segments[i].curve.points[1].x)
-                    let distanceY = Math.abs(hitResult.item.position.y - this.path2._segments[i].curve.points[1].y)
-                    if(distanceY + distanceX < distanceTotal) {
-                      distanceTotal = distanceY + distanceX
-                      this.segmentPointNumber = 1
-                      index = i
-                    }
-
-                    distanceX = Math.abs(hitResult.item.position.x - this.path2._segments[i].curve.points[2].x)
-                    distanceY = Math.abs(hitResult.item.position.y - this.path2._segments[i].curve.points[2].y)
-                    if(distanceY + distanceX < distanceTotal) {
-                      distanceTotal = distanceY + distanceX
-                      this.segmentPointNumber = 2
-                      index = i
-                    }
-                  }
-                  this.segmentDot = this.path2._segments[index]
-
-
-
-                } else {
-                  let index = null
-                  let distanceTotal = 10000
-                  for(let i=0; i<this.path2._segments.length; i++){
-                    let distanceX = Math.abs(hitResult.item.position.x - this.path2._segments[i].point.x)
-                    let distanceY = Math.abs(hitResult.item.position.y - this.path2._segments[i].point.y)
-                    if(distanceY + distanceX < distanceTotal) {
-                      distanceTotal = distanceY + distanceX
-                      index = i
-                    }
-                  }
-                  this.segment = this.path2._segments[index]
+              // когда кликаем по стрелке вращения
+              if(hitResult.item.name == "topRightRot" || hitResult.item.name == "bottomRightRot" || hitResult.item.name == "bottomLeftRot" || hitResult.item.name == "topLeftRot"){
+                this.currentRotationPoint = hitResult.item.name
+              }
+              // когда кликаем по углу прямоугольника
+              else if(hitResult.item.name == "topRight" || hitResult.item.name == "topLeft" || hitResult.item.name == "bottomRight" || hitResult.item.name == "bottomLeft"){
+                this.cornerScale = hitResult.item.name
+              }
+              // когда кликаем по прямоугольнику
+              else if(hitResultType == 'stroke' && hitResult.item.name == "csaleRectangle"){
+                this.sideScaleRectangleNumber = hitResult.item.curves.findIndex(i=>i.point1.x == hitResult.location.curve.point1.x && i.point1.y == hitResult.location.curve.point1.y)
+              }
+              // когда кликаем по боковой стрелке
+              else if(hitResult.item.name == "rightTriangle" || hitResult.item.name == "topTriangle" || hitResult.item.name == "bottomTriangle" || hitResult.item.name == "leftTriangle"){
+                switch(hitResult.item.name) {
+                  case "rightTriangle":
+                    this.sideScaleRectangleNumber=2
+                    break;
+                  case "topTriangle":
+                    this.sideScaleRectangleNumber=1
+                    break;
+                  case "bottomTriangle":
+                    this.sideScaleRectangleNumber=3
+                    break;
+                  case "leftTriangle":
+                    this.sideScaleRectangleNumber=0
+                    break;
                 }
               }
             }
-
-
-
-            if (hitResult.type == 'segment') {
-              this.segment = hitResult.segment;
-            } else if (hitResult.type == 'stroke' && hitResult.item._type != "circle") {
-              console.log(hitResult)
-              let location = hitResult.location;
-              this.segment = this.path2.insert(location.index + 1, event.point);
-              //this.path2.smooth();
+            if(!hitResult){
+              this.changeScale()
+              this.deleteRotationArrows()
             }
+          } else { // если не в режиме масштабирования
+            this.segment = null;
+            this.segmentDot = null;
+            this.segmentPointNumber = 0
+            let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
+            // убираем возможность редактирования кривых, если кликнули по пустому
+            if (!hitResult && this.curveEditorMode){
+              this.curveEditorHandler()
+              return;
+            }
+            if (hitResult) {
+              // когда кликаем по самой фигуре
+              if(!hitResult.item.name && hitResult.type == 'fill'){
+                this.pathSelected = true
+              }
 
+              if(hitResult.item._type === "circle"){
+                if(hitResult.item.radius === 3){
 
-            // if(hitResult.item._type == "circle"){
-            //   this.path2 = this.scope.project._children[0]._children[0]
-            //   this.segment = this.path2._segments.find(i=>i.point.x == hitResult.item.position.x && i.point.y == hitResult.item.position.y)
-            // }
-            // console.log('%c Oh my heavens! ', 'background: #222; color: #bada55');
-            // console.log(this.segment)
-          }
-
-
-              if(hitResult){
-                this.movePath = hitResult.type == 'fill';
-                if (this.movePath){
-                  this.scope.project.activeLayer.addChild(hitResult.item);
-                } 
+                  // определяем нужный маленький кружок для перемещения
+                  for(let i=0; i<this.path._segments.length; i++){
+                    if(this.path._segments[i].curve.points[1].x == hitResult.item.position.x && this.path._segments[i].curve.points[1].y == hitResult.item.position.y){
+                      this.segmentDot = this.path._segments[i]
+                      this.segmentPointNumber = 1
+                    } else if(this.path._segments[i].curve.points[2].x == hitResult.item.position.x && this.path._segments[i].curve.points[2].y == hitResult.item.position.y){
+                      this.segmentDot = this.path._segments[i]
+                      this.segmentPointNumber = 2
+                    }
+                  }
+                } else {
+                  // определяем нужный большой кружок для перемещения
+                  for(let i=0; i<this.path._segments.length; i++){
+                    if(this.path._segments[i].point.x == hitResult.item.position.x && this.path._segments[i].point.y == hitResult.item.position.y){
+                      this.segment = this.path._segments[i]
+                    }
+                  }
+                }
+              }
+              if (hitResult.type == 'segment') {
+                this.segment = hitResult.segment;
+              }
+              // добавляем сегмент при клике на обводку
+              else if (hitResult.type == 'stroke' && hitResult.item._type != "circle") {
+                this.segment = this.path.insert(hitResult.location.index + 1, event.point);
               }
             }
+          }
         }
       };
 
 
       this.tool.onMouseMove= (event) => {
+        // рисуем стрелки вращения в зависимости где курсор
         if(this.scaleMode){
-
           this.deleteRotationArrows()
           this.drawRotationArrow(event)
-          
-
-
-
-
-
         }
-        this.toNormalSizeChildren()
-        //this.scope.project.activeLayer.selected = false;
-        // if (event.item){
-        //   event.item.selected = true;
-        // }
-        let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
-        if(hitResult && hitResult.item.type == 'circle' && hitResult.item.radius == 10){
-          this.scope.project._children[0]._children.find(i=>i.id == hitResult.item.id).radius = 15
-        } else if(hitResult && hitResult.type == 'stroke' && !this.scaleMode) {
-          this.scope.project._children[0]._children.find(i=>i.className == "Path").strokeWidth = 3;
-        }
+        this.changeNormalSizeChildren(event)
       }
 
       this.tool.onMouseDrag = (event) => {
 
         this.deletePathCircles()
         this.deleteMiniPathCircles()
-        if(this.curveEditorMode){
-          self.path.fullySelected = true;
-        }
 
         if(!this.dragMode) {
 
           self.path.add(event);
           self.path.fillColor = '#efefef';
 
-          if (this.crossedArr.length) {
-            this.crossed = true
-          }
         } else {
           if(this.scaleMode){
             if(this.cornerScale){
               switch(this.cornerScale) {
                 case 'topRight':
                   if((event.delta.x > 0 && event.delta.y < 0) || (event.delta.x < 0 && event.delta.y > 0)){
-                    event.delta.x > 0 ? this.path2.scale(1.01, 1) : this.path2.scale(0.99, 1)
-                    event.delta.y < 0 ? this.path2.scale(1, 1.01) : this.path2.scale(1, 0.99)
+                    event.delta.x > 0 ? this.path.scale(1.01, 1) : this.path.scale(0.99, 1)
+                    event.delta.y < 0 ? this.path.scale(1, 1.01) : this.path.scale(1, 0.99)
                   }
                   break;
                 case 'topLeft':
                   if((event.delta.x > 0 && event.delta.y > 0) || (event.delta.x < 0 && event.delta.y < 0)){
-                    event.delta.y < 0 ? this.path2.scale(1, 1.02) : this.path2.scale(1, 0.98)
-                    event.delta.x < 0 ? this.path2.scale(1.02, 1) : this.path2.scale(0.98, 1)
+                    event.delta.y < 0 ? this.path.scale(1, 1.02) : this.path.scale(1, 0.98)
+                    event.delta.x < 0 ? this.path.scale(1.02, 1) : this.path.scale(0.98, 1)
                   }
                   break;
                 case 'bottomRight':
                   if((event.delta.x > 0 && event.delta.y > 0) || (event.delta.x < 0 && event.delta.y < 0)){
-                    event.delta.y > 0 ? this.path2.scale(1, 1.02) : this.path2.scale(1, 0.98)
-                    event.delta.x > 0 ? this.path2.scale(1.02, 1) : this.path2.scale(0.98, 1)
+                    event.delta.y > 0 ? this.path.scale(1, 1.02) : this.path.scale(1, 0.98)
+                    event.delta.x > 0 ? this.path.scale(1.02, 1) : this.path.scale(0.98, 1)
                   }
                   break;
                 case 'bottomLeft':
                   if((event.delta.x > 0 && event.delta.y < 0) || (event.delta.x < 0 && event.delta.y > 0)){
-                    event.delta.x < 0 ? this.path2.scale(1.02, 1) : this.path2.scale(0.98, 1)
-                    event.delta.y > 0 ? this.path2.scale(1, 1.02) : this.path2.scale(1, 0.98)
+                    event.delta.x < 0 ? this.path.scale(1.02, 1) : this.path.scale(0.98, 1)
+                    event.delta.y > 0 ? this.path.scale(1, 1.02) : this.path.scale(1, 0.98)
                   }
                   break;
               }
               this.deleteScaleRectangle()
               this.drawScaleRectangle()
-              console.log('444444444444444')
               this.deleteRotationArrows()
               this.drawRotationArrow(event)
-            } else if (this.path2 && this.strokeScaleNumber === null) {
-              if(this.currentRotationPant){
-
-                console.log(event.point.x)
-                console.log(event.point.y)
-                console.log('----------')
-                console.log(this.path2.bounds.center.x)
-                //this.deleteScaleRectangle()
-                //this.drawScaleRectangle()
+            } else if (this.sideScaleRectangleNumber === null) { // если выбрана не сторона
+              if(this.currentRotationPoint){// если выбрана стрелочка поворота
 
                 let rectangle = this.scope.project._children[0]._children['csaleRectangle']
                 let arrow = this.scope.project._children[0]._children.find(i=>i.name == 'topRightRot' || i.name == 'topLeftRot' || i.name == 'bottomRightRot' || i.name == 'bottomLeftRot')
@@ -958,112 +815,147 @@ export default {
                 let topLeft = this.scope.project._children[0]._children['topLeft']
                 let bottomRight = this.scope.project._children[0]._children['bottomRight']
                 let bottomLeft = this.scope.project._children[0]._children['bottomLeft']
+                let rightTriangle = this.scope.project._children[0]._children['rightTriangle']
+                let leftTriangle = this.scope.project._children[0]._children['leftTriangle']
+                let bottomTriangle = this.scope.project._children[0]._children['bottomTriangle']
+                let topTriangle = this.scope.project._children[0]._children['topTriangle']
 
-                if (event.point.x<this.path2.bounds.center.x && event.point.y>this.path2.bounds.center.y){
+                if (event.point.x<this.path.bounds.center.x && event.point.y>this.path.bounds.center.y){
                   if(event.delta.x<0 || event.delta.y<0){
-                    this.path2.rotate(1.3);
-                    arrow.rotate(1.3,this.path2.bounds.center);
-                    rectangle.rotate(1.3,this.path2.bounds.center);
-                    bottomLeft.rotate(1.3,this.path2.bounds.center);
-                    bottomRight.rotate(1.3,this.path2.bounds.center);
-                    topLeft.rotate(1.3,this.path2.bounds.center);
-                    topRight.rotate(1.3,this.path2.bounds.center);
+                    this.path.rotate(1.3);
+                    arrow.rotate(1.3,this.path.bounds.center);
+                    rectangle.rotate(1.3,this.path.bounds.center);
+                    bottomLeft.rotate(1.3,this.path.bounds.center);
+                    bottomRight.rotate(1.3,this.path.bounds.center);
+                    topLeft.rotate(1.3,this.path.bounds.center);
+                    topRight.rotate(1.3,this.path.bounds.center);
+                    rightTriangle.rotate(1.3,this.path.bounds.center);
+                    leftTriangle.rotate(1.3,this.path.bounds.center);
+                    bottomTriangle.rotate(1.3,this.path.bounds.center);
+                    topTriangle.rotate(1.3,this.path.bounds.center);
                   } else {
-                    this.path2.rotate(-1.3);
-                    arrow.rotate(-1.3,this.path2.bounds.center);
-                    rectangle.rotate(-1.3,this.path2.bounds.center);
-                    bottomLeft.rotate(-1.3,this.path2.bounds.center);
-                    bottomRight.rotate(-1.3,this.path2.bounds.center);
-                    topLeft.rotate(-1.3,this.path2.bounds.center);
-                    topRight.rotate(-1.3,this.path2.bounds.center);
+                    this.path.rotate(-1.3);
+                    arrow.rotate(-1.3,this.path.bounds.center);
+                    rectangle.rotate(-1.3,this.path.bounds.center);
+                    bottomLeft.rotate(-1.3,this.path.bounds.center);
+                    bottomRight.rotate(-1.3,this.path.bounds.center);
+                    topLeft.rotate(-1.3,this.path.bounds.center);
+                    topRight.rotate(-1.3,this.path.bounds.center);
+                    rightTriangle.rotate(-1.3,this.path.bounds.center);
+                    leftTriangle.rotate(-1.3,this.path.bounds.center);
+                    bottomTriangle.rotate(-1.3,this.path.bounds.center);
+                    topTriangle.rotate(-1.3,this.path.bounds.center);
                   }
-                }else if(event.point.y>this.path2.bounds.center.y){
+                }else if(event.point.y>this.path.bounds.center.y){
                   if(event.delta.x<0 || event.delta.y>0){
-                    this.path2.rotate(1.3);
-                    arrow.rotate(1.3,this.path2.bounds.center);
-                    rectangle.rotate(1.3,this.path2.bounds.center);
-                    bottomLeft.rotate(1.3,this.path2.bounds.center);
-                    bottomRight.rotate(1.3,this.path2.bounds.center);
-                    topLeft.rotate(1.3,this.path2.bounds.center);
-                    topRight.rotate(1.3,this.path2.bounds.center);
+                    this.path.rotate(1.3);
+                    arrow.rotate(1.3,this.path.bounds.center);
+                    rectangle.rotate(1.3,this.path.bounds.center);
+                    bottomLeft.rotate(1.3,this.path.bounds.center);
+                    bottomRight.rotate(1.3,this.path.bounds.center);
+                    topLeft.rotate(1.3,this.path.bounds.center);
+                    topRight.rotate(1.3,this.path.bounds.center);
+                    rightTriangle.rotate(1.3,this.path.bounds.center);
+                    leftTriangle.rotate(1.3,this.path.bounds.center);
+                    bottomTriangle.rotate(1.3,this.path.bounds.center);
+                    topTriangle.rotate(1.3,this.path.bounds.center);
                   } else {
-                    this.path2.rotate(-1.3);
-                    arrow.rotate(-1.3,this.path2.bounds.center);
-                    rectangle.rotate(-1.3,this.path2.bounds.center);
-                    bottomLeft.rotate(-1.3,this.path2.bounds.center);
-                    bottomRight.rotate(-1.3,this.path2.bounds.center);
-                    topLeft.rotate(-1.3,this.path2.bounds.center);
-                    topRight.rotate(-1.3,this.path2.bounds.center);
+                    this.path.rotate(-1.3);
+                    arrow.rotate(-1.3,this.path.bounds.center);
+                    rectangle.rotate(-1.3,this.path.bounds.center);
+                    bottomLeft.rotate(-1.3,this.path.bounds.center);
+                    bottomRight.rotate(-1.3,this.path.bounds.center);
+                    topLeft.rotate(-1.3,this.path.bounds.center);
+                    topRight.rotate(-1.3,this.path.bounds.center);
+                    rightTriangle.rotate(-1.3,this.path.bounds.center);
+                    leftTriangle.rotate(-1.3,this.path.bounds.center);
+                    bottomTriangle.rotate(-1.3,this.path.bounds.center);
+                    topTriangle.rotate(-1.3,this.path.bounds.center);
                   }
-                } else if (event.point.x<this.path2.bounds.center.x){
+                } else if (event.point.x<this.path.bounds.center.x){
                   if(event.delta.x>0 || event.delta.y<0){
-                    this.path2.rotate(1.3);
-                    arrow.rotate(1.3,this.path2.bounds.center);
-                    rectangle.rotate(1.3,this.path2.bounds.center);
-                    bottomLeft.rotate(1.3,this.path2.bounds.center);
-                    bottomRight.rotate(1.3,this.path2.bounds.center);
-                    topLeft.rotate(1.3,this.path2.bounds.center);
-                    topRight.rotate(1.3,this.path2.bounds.center);
+                    this.path.rotate(1.3);
+                    arrow.rotate(1.3,this.path.bounds.center);
+                    rectangle.rotate(1.3,this.path.bounds.center);
+                    bottomLeft.rotate(1.3,this.path.bounds.center);
+                    bottomRight.rotate(1.3,this.path.bounds.center);
+                    topLeft.rotate(1.3,this.path.bounds.center);
+                    topRight.rotate(1.3,this.path.bounds.center);
+                    rightTriangle.rotate(1.3,this.path.bounds.center);
+                    leftTriangle.rotate(1.3,this.path.bounds.center);
+                    bottomTriangle.rotate(1.3,this.path.bounds.center);
+                    topTriangle.rotate(1.3,this.path.bounds.center);
                   } else {
-                    this.path2.rotate(-1.3);
-                    arrow.rotate(-1.3,this.path2.bounds.center);
-                    rectangle.rotate(-1.3,this.path2.bounds.center);
-                    bottomLeft.rotate(-1.3,this.path2.bounds.center);
-                    bottomRight.rotate(-1.3,this.path2.bounds.center);
-                    topLeft.rotate(-1.3,this.path2.bounds.center);
-                    topRight.rotate(-1.3,this.path2.bounds.center);
+                    this.path.rotate(-1.3);
+                    arrow.rotate(-1.3,this.path.bounds.center);
+                    rectangle.rotate(-1.3,this.path.bounds.center);
+                    bottomLeft.rotate(-1.3,this.path.bounds.center);
+                    bottomRight.rotate(-1.3,this.path.bounds.center);
+                    topLeft.rotate(-1.3,this.path.bounds.center);
+                    topRight.rotate(-1.3,this.path.bounds.center);
+                    rightTriangle.rotate(-1.3,this.path.bounds.center);
+                    leftTriangle.rotate(-1.3,this.path.bounds.center);
+                    bottomTriangle.rotate(-1.3,this.path.bounds.center);
+                    topTriangle.rotate(-1.3,this.path.bounds.center);
                   }
                 } else {
                   if(event.delta.x>0 || event.delta.y>0){
-                    this.path2.rotate(1.3);
-                    arrow.rotate(1.3,this.path2.bounds.center);
-                    rectangle.rotate(1.3,this.path2.bounds.center);
-                    bottomLeft.rotate(1.3,this.path2.bounds.center);
-                    bottomRight.rotate(1.3,this.path2.bounds.center);
-                    topLeft.rotate(1.3,this.path2.bounds.center);
-                    topRight.rotate(1.3,this.path2.bounds.center);
+                    this.path.rotate(1.3);
+                    arrow.rotate(1.3,this.path.bounds.center);
+                    rectangle.rotate(1.3,this.path.bounds.center);
+                    bottomLeft.rotate(1.3,this.path.bounds.center);
+                    bottomRight.rotate(1.3,this.path.bounds.center);
+                    topLeft.rotate(1.3,this.path.bounds.center);
+                    topRight.rotate(1.3,this.path.bounds.center);
+                    rightTriangle.rotate(1.3,this.path.bounds.center);
+                    leftTriangle.rotate(1.3,this.path.bounds.center);
+                    bottomTriangle.rotate(1.3,this.path.bounds.center);
+                    topTriangle.rotate(1.3,this.path.bounds.center);
                   } else {
-                    this.path2.rotate(-1.3);
-                    arrow.rotate(-1.3,this.path2.bounds.center);
-                    rectangle.rotate(-1.3,this.path2.bounds.center);
-                    bottomLeft.rotate(-1.3,this.path2.bounds.center);
-                    bottomRight.rotate(-1.3,this.path2.bounds.center);
-                    topLeft.rotate(-1.3,this.path2.bounds.center);
-                    topRight.rotate(-1.3,this.path2.bounds.center);
+                    this.path.rotate(-1.3);
+                    arrow.rotate(-1.3,this.path.bounds.center);
+                    rectangle.rotate(-1.3,this.path.bounds.center);
+                    bottomLeft.rotate(-1.3,this.path.bounds.center);
+                    bottomRight.rotate(-1.3,this.path.bounds.center);
+                    topLeft.rotate(-1.3,this.path.bounds.center);
+                    topRight.rotate(-1.3,this.path.bounds.center);
+                    rightTriangle.rotate(-1.3,this.path.bounds.center);
+                    leftTriangle.rotate(-1.3,this.path.bounds.center);
+                    bottomTriangle.rotate(-1.3,this.path.bounds.center);
+                    topTriangle.rotate(-1.3,this.path.bounds.center);
                   }
                 }
-
-
-
-
-              } else {
-                this.path2.position.x += event.delta.x;
-                this.path2.position.y += event.delta.y;
+              } else { // если выбрана не стрелочка и не сторона
+                this.path.position.x += event.delta.x;
+                this.path.position.y += event.delta.y;
                 this.deleteScaleRectangle()
                 this.drawScaleRectangle()
                 this.deleteRotationArrows()
                 this.drawRotationArrow(event)
               }
-            } else if(this.strokeScaleNumber !== null) {
-              switch(this.strokeScaleNumber) {
+            } else if(this.sideScaleRectangleNumber !== null) {
+              switch(this.sideScaleRectangleNumber) {
                 case 0:
-                  event.delta.x < 0 ? this.path2.scale(1.03, 1) : this.path2.scale(0.97, 1)
+                  event.delta.x < 0 ? this.path.scale(1.03, 1) : this.path.scale(0.97, 1)
                   break;
                 case 1:
-                  event.delta.y < 0 ? this.path2.scale(1, 1.04) : this.path2.scale(1, 0.97)
+                  event.delta.y < 0 ? this.path.scale(1, 1.04) : this.path.scale(1, 0.97)
                   break;
                 case 2:
-                  event.delta.x > 0 ? this.path2.scale(1.03, 1) : this.path2.scale(0.97, 1)
+                  event.delta.x > 0 ? this.path.scale(1.03, 1) : this.path.scale(0.97, 1)
                   break;
                 case 3:
-                  event.delta.y > 0 ? this.path2.scale(1, 1.04) : this.path2.scale(1, 0.97)
+                  event.delta.y > 0 ? this.path.scale(1, 1.04) : this.path.scale(1, 0.97)
                   break;
               }
               this.deleteScaleRectangle()
               this.drawScaleRectangle()
+              this.deleteRotationArrows()
+              this.drawRotationArrow(event)
             }
           } else {
             if (this.segmentDot){
+              console.log(11)
               if(this.segmentPointNumber == 1){
                 this.segmentDot.curve.handle1.x += event.delta.x;
                 this.segmentDot.curve.handle1.y += event.delta.y;
@@ -1076,9 +968,9 @@ export default {
               if (this.segment) {
                 this.segment.point.x += event.delta.x;
                 this.segment.point.y += event.delta.y;
-              } else if (this.path2) {
-                this.path2.position.x += event.delta.x;
-                this.path2.position.y += event.delta.y;
+              } else if (this.pathSelected) {
+                this.path.position.x += event.delta.x;
+                this.path.position.y += event.delta.y;
               }
             }
 
@@ -1089,15 +981,11 @@ export default {
       this.tool.onMouseUp = () => {
         let self = this;
 
-
-        if(!this.dragMode) {
+        if(!this.dragMode) { // если находимся на стадии рисования
           // завершаем линию
           self.path.add(new paper.Point(self.path.curves[0].point1._x, self.path.curves[0].point1._y))
-          //this.scope.project._children[0]._children.find(i=>i.className == "Path").name = 'generalPath'
           // формируем массив пересечений
           this.crossedArr = self.path.getCrossings(self.path)
-
-
           // формируем массив точек всей линии
           let readyPointsGo = []
           for (let i = 0; i < self.path.curves.length; i++) {
@@ -1111,73 +999,39 @@ export default {
             }
           }
 
-
+          // если есть пересечения, избавляемся от них
           if (this.crossedArr.length) {
             this.cutCrossings(readyPointsGo)
           } else {
             this.FinArr = readyPointsGo
           }
-
-
-          this.$emit('clearHandler', false)
+          // чистим холст
+         this.$emit('clearHandler', false)
 
           self.path = new paper.Path()
           self.path.strokeColor = 'black';
 
+          // заново рисуем фигуру
           for (let i = 0; i < this.FinArr.length; i++) {
             self.path.add(new paper.Point(this.FinArr[i].x, this.FinArr[i].y));
           }
           self.path.closed = true;
           self.path.fillColor = { hue: Math.random() * 360, saturation: 1, lightness: (Math.random() - 0.5) * 0.4 + 0.4 };
 
-
-
-
           self.path.simplify(30);
 
-
-          this.simpArr=this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData
           if(this.currentIndex != this.pathHistory.length-1){
             this.pathHistory.splice(this.currentIndex+1,Infinity)
           }
           this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData})
           this.currentIndex = this.pathHistory.length-1
-          console.log('HISTORY')
-          console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
 
-
-          // let rer = []
-          // if(this.scope.project._children[0]._children[0].curves){
-          //
-          //   for(let i=0 ; i<this.scope.project._children[0]._children[0].curves.length ; i++){
-          //     for(let j=1 ; j<this.scope.project._children[0]._children[0].curves[i].points.length ; j++){
-          //       rer.push({
-          //         x:this.scope.project._children[0]._children[0].curves[i].points[j].x,
-          //         y:this.scope.project._children[0]._children[0].curves[i].points[j].y
-          //       })
-          //     }
-          //   }
-          //
-          //
-          //   for(let i=0;i<rer.length;i++){
-          //     var shape193 = new paper.Shape.Circle(new paper.Point(rer[i].x,rer[i].y), 10);
-          //     shape193.strokeColor = 'rgba(0,0,0,0.5)';
-          //     shape193.fillColor = 'rgba(255,2,2,0.5)';
-          //   }
-          //
-          //
-          // }
-          console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
-
-
-          this.pathExtra = self.path
 
         } else {
           if(this.scaleMode){
             this.deleteScaleRectangle()
             this.drawScaleRectangle()
           }
-          this.simpArr=this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData
           if(this.currentIndex != this.pathHistory.length-1){
             this.pathHistory.splice(this.currentIndex+1,Infinity)
           }
@@ -1189,7 +1043,7 @@ export default {
         //self.path.selected = false;
         this.deletePathCircles()
         if(this.curveEditorMode){
-          this.drawCirclesCurves()  
+          this.drawCirclesCurves()
         } else {
           this.drawCircles()
         }
@@ -1197,26 +1051,28 @@ export default {
     }
   },
   mounted() {
-    //this.$emit('rerender')
     this.scope = new paper.PaperScope();
     this.scope.setup(this.canvasId);
-    console.log(document.body.clientWidth);
-    console.log(window.innerWidth);
-
-    this.$nextTick(function () {
-      let canvas = document.getElementsByClassName("canvas-style")[0]
-      console.log(canvas.width, canvas.height);
-      console.log(window.innerWidth);
-      if(window.innerWidth>1465){
-        this.scope.project.view.viewSize = ['600', '750'];
-      } else if(window.innerWidth>1024){
-        this.scope.project.view.viewSize = ['456', '570'];
-      }
-      
-  })
+    // устанавливаем ширину холста согласно вёрстке
+    if(window.innerWidth>1465){
+      this.scope.project.view.viewSize = ['600', '750'];
+    } else if(window.innerWidth>1024){
+      this.scope.project.view.viewSize = ['456', '570'];
+    } else if(window.innerWidth>890){
+      this.scope.project.view.viewSize = ['400', '500'];
+    } else {
+      this.scope.project.view.viewSize = ['400', '500'];
+    }
   },
   watch:{
     simpValue(val, oldVal){
+
+
+      let self = this
+      if(this.scaleMode){
+        this.changeScale()
+        this.deleteRotationArrows()
+      }
 
       if(this.scope.project._children[0]._children.find(i=>i.className == "Path")){
         this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
@@ -1226,15 +1082,15 @@ export default {
         // this.currentIndex++
 
 
-        this.simpArr=this.pathHistory[this.pathHistory.length-1].data
+        let lastPath=this.pathHistory[this.pathHistory.length-1].data
 
         this.$emit('clearSimp')
-        self.path = new paper.Path(this.simpArr)
+        self.path = new paper.Path(lastPath)
         self.path.strokeColor = 'black';
         self.path.fillColor = 'red';
         if(val>oldVal){
           self.path.flatten(1);
-          self.path.simplify();
+          self.path.simplify(3);
         } else {
           //self.path.simplify();
           self.path.flatten(40/val);
@@ -1242,9 +1098,7 @@ export default {
         this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
         this.currentIndex++
 
-
         this.drawCircles()
-        //self.path.fullySelected = true;
       }
 
     }
@@ -1412,9 +1266,8 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
   background-color: #231f20;
 }
 canvas[resize] {
-  width: 600px !important;
-  height: 750px !important;
-
+  width: 600px ;
+  height: 750px ;
 }
 .canvas-style {
   cursor: crosshair;
@@ -1428,9 +1281,12 @@ canvas[resize] {
 
 @media (max-width: 1465px) {
   canvas[resize] {
-    width: 456px !important;
-    height: 570px !important;
+    width: 456px;
+    height: 570px;
   
+}
+.buttons-wrap{
+  margin-left: 35px;
 }
   .btn-tool{
   font-size: 13px;
@@ -1443,22 +1299,25 @@ canvas[resize] {
 }
 @media (max-width: 1024px) {
   canvas[resize] {
-  width: 520px !important;
-  height: 650px !important;
+  width: 400px;
+  height: 500px;
   
+}
+.buttons-wrap{
+  margin-left: 20px;
 }
   .btn-tool{
   font-family: 'Roboto', sans-serif;
   font-size: 11px;
   letter-spacing: 2px;
-  width: 220px;
+  width: 195px;
   height: 35px;
 }
 .btn-tool-arrow{
   font-family: 'Roboto', sans-serif;
   font-size: 11px;
   letter-spacing: 2px;
-  width: 100px;
+  width: 93px;
   height: 35px;
 }
 }

@@ -279,7 +279,7 @@ line-height: 1.5em;
 color: white;
 background-color: #231f20;
 }
-@media (max-width: 1300px) {
+@media (max-width: 1465px) {
   .card-sign{
     padding-top: 22px;
     padding-bottom: 0px;
