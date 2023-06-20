@@ -7,44 +7,46 @@
     <div class="buttons-block">
       <div class="buttons-wrap">
         <el-button :disabled="!dragMode" @click="clearPaper" class="btn-wrap btn-tool">
-          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+          <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <Delete />
           </el-icon>
           ОЧИСТИТЬ
-        </el-button>55{{sideScaleRectangleNumber}}55
+        </el-button>
         <div style="display: flex; justify-content: space-between; width: 100%;">
-          <el-button @click="back" class="btn-wrap btn-tool-arrow">
-          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+          <el-button @click="back(false)" class="btn-wrap btn-tool-arrow">
+          <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <Undo />
           </el-icon>
           НАЗАД
         </el-button>
         <el-button @click="forward" class="btn-wrap btn-tool-arrow">
-          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+          <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <Redo />
           </el-icon>
           ВПЕРЁД
         </el-button>
         </div>
         <el-button @click="changeScale" class="btn-wrap btn-tool">
-          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+          <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <ArrowExpand />
           </el-icon>
           МАСШТАБ
         </el-button>
         <el-button @click="curveEditorHandler" class="btn-wrap btn-tool">
-          <el-icon :size="20" style="margin-top: -5px; margin-right: 3px;">
+          <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <VectorCurve />
           </el-icon>
           КРИВЫЕ {{ curveEditorMode }}
         </el-button>
         <div style=" display: flex; flex-direction: column;">
           <label for="volume">СГЛАЖИВАНИЕ</label>
-          <input type="range" id="volume" name="volume" min="2" max="30" :disabled="!dragMode || fewSegments" v-model="simpValue">
+          <input type="range" id="volume" name="volume" min="2" max="30" @input="yyu" :disabled="!dragMode || fewSegments" v-model="simpValue">
         </div>
         <el-button @click="goToDrawPage">
           NEXT
         </el-button>
+        currentIndex:{{currentIndex}}
+        pathHistory.length:{{ pathHistory.length}}
       </div>
     </div>
   </div>
@@ -87,11 +89,11 @@ export default {
       fill: true,
       tolerance: 1
     },
-    hitOptions2: {
+    hitOptionsExtended: {
       segments: true,
       stroke: true,
       fill: true,
-      tolerance: 1
+      tolerance: 15
     },
 
     loop: 0, // кол-во выполнения функции обрезания
@@ -101,6 +103,15 @@ export default {
     scope: null
   }),
   methods: {
+    yyu(event){
+      console.log(event)
+    },
+    getIconSize(){
+      if(window.innerWidth<890){
+        return 15
+      }
+      return 20
+    },
     curveEditorHandler(){
       let self = this;
       if(this.curveEditorMode){
@@ -288,9 +299,9 @@ export default {
         this.deleteMiniPathCircles()
         self.path.selected = false;
       }
-        console.log(this.scope.project);
     },
     forward(){
+      let self = this;
       this.scaleMode = false
       if(this.currentIndex<this.pathHistory.length-1){
         this.currentIndex++
@@ -298,33 +309,38 @@ export default {
           this.forward()
         } else {
           this.$emit('clearSimp')
+          // let children = this.scope.project.activeLayer;
+          // children.removeChildren(0)
           self.path = new paper.Path(this.pathHistory[this.currentIndex].data)
           self.path.strokeColor = 'black';
           self.path.fillColor = 'red';
           self.path.closed = true;
         }
+      } else if(this.currentIndex==this.pathHistory.length-1){
+        this.$emit('clearSimp')
+        self.path = new paper.Path(this.pathHistory[this.currentIndex].data)
+        self.path.strokeColor = 'black';
+        self.path.fillColor = 'red';
+        self.path.closed = true;
       }
     },
+    addHistory(){
+
+    },
     drawCirclesCurves(){
-      //let self = this;
       if(!this.scaleMode){
-        let path = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-        console.log(this.scope.project._children[0])
-        if(path._segments){
-          //path.fullySelected = true;
-          for(let i=0 ; i<path._segments.length ; i++){
+        if(this.path._segments){
+          for(let i=0 ; i<this.path._segments.length ; i++){
+            let firstCircle = new paper.Shape.Circle(new paper.Point(this.path._segments[i].curve.points[1].x,this.path._segments[i].curve.points[1].y), 3);
+            firstCircle.name = 'circlePahtMini';
+            firstCircle.fillColor = 'rgba(0,157,236)';
 
-            var shape192 = new paper.Shape.Circle(new paper.Point(path._segments[i].curve.points[1].x,path._segments[i].curve.points[1].y), 3);
-            shape192.name = 'circlePahtMini';
-            shape192.fillColor = 'rgba(0,157,236)';
-
-            var shape145 = new paper.Shape.Circle(new paper.Point(path._segments[i].curve.points[2].x,path._segments[i].curve.points[2].y), 3);
-            shape145.name = 'circlePahtMini';
-            shape145.fillColor = 'rgba(0,157,236)';
+            let secondCircle = new paper.Shape.Circle(new paper.Point(this.path._segments[i].curve.points[2].x,this.path._segments[i].curve.points[2].y), 3);
+            secondCircle.name = 'circlePahtMini';
+            secondCircle.fillColor = 'rgba(0,157,236)';
           }
         }
-        console.log(path)
-        if(path._segments.length>3){
+        if(this.path._segments.length>3){
           this.fewSegments = false
         } else {
           this.fewSegments = true
@@ -334,16 +350,14 @@ export default {
     drawCircles(){
       if(!this.scaleMode){
         let path = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-        console.log(path)
         if(path._segments){
           for(let i=0 ; i<path._segments.length ; i++){
-            var shape19 = new paper.Shape.Circle(new paper.Point(path._segments[i].point.x,path._segments[i].point.y), 10);
-            shape19.strokeColor = 'rgba(0,38,32,0.5)';
-            shape19.name = 'circlePaht';
-            shape19.fillColor = 'rgba(0,255,217,0.2)';
+            let circle = new paper.Shape.Circle(new paper.Point(path._segments[i].point.x,path._segments[i].point.y), 10);
+            circle.strokeColor = 'rgba(0,38,32,0.5)';
+            circle.name = 'circlePaht';
+            circle.fillColor = 'rgba(0,255,217,0.2)';
           }
         }
-        console.log(path)
         if(path._segments.length>3){
           this.fewSegments = false
         } else {
@@ -359,12 +373,19 @@ export default {
       this.simpValue = 2
       this.$emit('clearHandler',true)
     },
-    back(){
+    back(simplify = false){
       this.scaleMode = false
       this.curveEditorMode = false
       if(this.currentIndex>0){
         this.currentIndex--
-        if(this.pathHistory[this.currentIndex-1] && this.pathHistory[this.currentIndex-1].simplify){
+
+        console.log(this.pathHistory[this.currentIndex-1] ? this.pathHistory[this.currentIndex-1].simplify : undefined)
+        console.log(simplify)
+        console.log(this.pathHistory[this.currentIndex-1])
+        console.log('---------------')
+
+        if(this.pathHistory[this.currentIndex-1] && this.pathHistory[this.currentIndex-1].simplify && simplify == false){
+          console.log('back')
           this.back()
         } else {
           let self = this;
@@ -374,14 +395,14 @@ export default {
           self.path.fillColor = 'red';
           //self.path.simplify(1);
           self.path.closed = true;
-          if(this.simpValue>0){
+          if (this.simpValue > 0) {
             //self.path.simplify(this.simpValue);
           }
         }
       }
     },
     drawRotationArrow(eventMove){
-
+      // рисуем стрелку поворота возле ближайшего к мышке угла
       let cornersArr = this.scope.project.activeLayer.children.filter(i=>i.name == 'bottomLeft' || i.name == 'bottomRight' || i.name == 'topLeft' || i.name == 'topRight')
       let distanceTotal = 10000
       let index = null
@@ -415,7 +436,6 @@ export default {
             topRightRotPath.add(new paper.Point(corner.position.x-20, corner.position.y-35))
             topRightRotPath.add(new paper.Point(corner.position.x-5,corner.position.y-20))
             topRightRotPath.add(new paper.Point(corner.position.x-5,corner.position.y-30))
-
             topRightRotPath.strokeColor = 'black';
             topRightRotPath.fillColor = 'white';
             topRightRotPath.name = 'topRightRot'
@@ -519,15 +539,11 @@ export default {
         let agreeableIndex = true
         for(let j=0; j<readyPointsGo.length; j++){
           agreeableIndex = true
-          if(readyPointsGo[j+1]){
-            if(readyPointsGo[j+1].cross){
+          if(readyPointsGo[j+1] && readyPointsGo[j+1].cross){
               agreeableIndex = false
-            }
           }
-          if(readyPointsGo[j-1]){
-            if(readyPointsGo[j-1].cross){
+          if(readyPointsGo[j-1] && readyPointsGo[j-1].cross){
               agreeableIndex = false
-            }
           }
           if(!readyPointsGo[j].cross && agreeableIndex){
             let distanceX = Math.abs(readyPointsGo[j].x - this.crossedArr[i]._point.x)
@@ -549,12 +565,12 @@ export default {
         routNumbers[i].count = Math.abs(routNumbers[i].firstIndex - routNumbers[i].secondIndex)
       }
       // нахождение начальной и конечной линии
-      let nArr = JSON.parse(JSON.stringify(readyPointsGo))
-      nArr.reverse()
+      let readyPointsGoReverce = JSON.parse(JSON.stringify(readyPointsGo))
+      readyPointsGoReverce.reverse()
 
       routNumbers.push({
-        count: nArr.indexOf(nArr.find(i=>i.crossIndex !== undefined)) + readyPointsGo.indexOf(readyPointsGo.find(i=>i.crossIndex !== undefined)),
-        end: readyPointsGo.length - nArr.indexOf(nArr.find(i=>i.crossIndex !== undefined))-1,
+        count: readyPointsGoReverce.indexOf(readyPointsGoReverce.find(i=>i.crossIndex !== undefined)) + readyPointsGo.indexOf(readyPointsGo.find(i=>i.crossIndex !== undefined)),
+        end: readyPointsGo.length - readyPointsGoReverce.indexOf(readyPointsGoReverce.find(i=>i.crossIndex !== undefined))-1,
         start: readyPointsGo.indexOf(readyPointsGo.find(i=>i.crossIndex !== undefined))
       })
 
@@ -582,21 +598,13 @@ export default {
 
       this.FinArr = cutPointsArray
 
-
-
-
-
-
-
       self.path = new paper.Path()
 
       for(let i=0; i<this.FinArr.length; i++){
         self.path.add(new paper.Point(this.FinArr[i].x, this.FinArr[i].y));
       }
       self.path.closed = true;
-
       this.crossedArr = self.path.getCrossings(self.path)
-
       if(this.crossedArr.length == 0 ||
           (
               this.crossedArr.length ==1 &&
@@ -609,7 +617,6 @@ export default {
         this.loop++
         this.cutCrossings(this.FinArr)
       }
-
 
       return cutPointsArray
 
@@ -640,8 +647,6 @@ export default {
       })
     },
 
-
-
     createTool(scope) {
       scope.activate();
       return new paper.Tool();
@@ -663,6 +668,7 @@ export default {
             this.cornerScale = null// угол за который тянем (при масштабировании)
             this.currentRotationPoint = null// стрелка за которую тянем (при вращении)
             let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
+            let hitResultExtended = this.scope.project.hitTest(event.point, this.hitOptionsExtended);
             if(hitResult){
               let hitResultType = hitResult.type
               // когда кликаем по самой фигуре
@@ -681,9 +687,11 @@ export default {
               else if(hitResultType == 'stroke' && hitResult.item.name == "csaleRectangle"){
                 this.sideScaleRectangleNumber = hitResult.item.curves.findIndex(i=>i.point1.x == hitResult.location.curve.point1.x && i.point1.y == hitResult.location.curve.point1.y)
               }
-              // когда кликаем по боковой стрелке
-              else if(hitResult.item.name == "rightTriangle" || hitResult.item.name == "topTriangle" || hitResult.item.name == "bottomTriangle" || hitResult.item.name == "leftTriangle"){
-                switch(hitResult.item.name) {
+            }
+            if(hitResultExtended){
+            // когда кликаем по боковой стрелке
+              if(hitResultExtended.item.name == "rightTriangle" || hitResultExtended.item.name == "topTriangle" || hitResultExtended.item.name == "bottomTriangle" || hitResultExtended.item.name == "leftTriangle"){
+                switch(hitResultExtended.item.name) {
                   case "rightTriangle":
                     this.sideScaleRectangleNumber=2
                     break;
@@ -699,7 +707,7 @@ export default {
                 }
               }
             }
-            if(!hitResult){
+            if(!hitResult && !hitResultExtended){
               this.changeScale()
               this.deleteRotationArrows()
             }
@@ -707,7 +715,7 @@ export default {
             this.segment = null;
             this.segmentDot = null;
             this.segmentPointNumber = 0
-            let hitResult = this.scope.project.hitTest(event.point, this.hitOptions);
+            let hitResult = this.scope.project.hitTest(event.point, this.hitOptionsExtended);
             // убираем возможность редактирования кривых, если кликнули по пустому
             if (!hitResult && this.curveEditorMode){
               this.curveEditorHandler()
@@ -735,7 +743,7 @@ export default {
                 } else {
                   // определяем нужный большой кружок для перемещения
                   for(let i=0; i<this.path._segments.length; i++){
-                    if(this.path._segments[i].point.x == hitResult.item.position.x && this.path._segments[i].point.y == hitResult.item.position.y){
+                    if(Math.trunc(this.path._segments[i].point.x) == Math.trunc(hitResult.item.position.x) && Math.trunc(this.path._segments[i].point.y) == Math.trunc(hitResult.item.position.y)){
                       this.segment = this.path._segments[i]
                     }
                   }
@@ -762,17 +770,12 @@ export default {
         }
         this.changeNormalSizeChildren(event)
       }
-
       this.tool.onMouseDrag = (event) => {
-
         this.deletePathCircles()
         this.deleteMiniPathCircles()
-
         if(!this.dragMode) {
-
           self.path.add(event);
           self.path.fillColor = '#efefef';
-
         } else {
           if(this.scaleMode){
             if(this.cornerScale){
@@ -1060,8 +1063,10 @@ export default {
       this.scope.project.view.viewSize = ['456', '570'];
     } else if(window.innerWidth>890){
       this.scope.project.view.viewSize = ['400', '500'];
+    } else if(window.innerWidth>700){
+      this.scope.project.view.viewSize = ['320', '400'];
     } else {
-      this.scope.project.view.viewSize = ['400', '500'];
+      this.scope.project.view.viewSize = ['280', '350'];
     }
   },
   watch:{
@@ -1075,28 +1080,35 @@ export default {
       }
 
       if(this.scope.project._children[0]._children.find(i=>i.className == "Path")){
-        this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
-        this.currentIndex++
+        //this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
+        //this.currentIndex++
 
-        // this.pathHistory.push({data:this.scope.project._children[0]._children[0].pathData})
-        // this.currentIndex++
+        
 
-
-        let lastPath=this.pathHistory[this.pathHistory.length-1].data
-
-        this.$emit('clearSimp')
-        self.path = new paper.Path(lastPath)
-        self.path.strokeColor = 'black';
-        self.path.fillColor = 'red';
         if(val>oldVal){
+
+          this.currentIndex++
+          let lastPath=this.pathHistory[this.pathHistory.length-1].data
+
+          this.$emit('clearSimp')
+          self.path = new paper.Path(lastPath)
+          self.path.strokeColor = 'black';
+          self.path.fillColor = 'red';
+
+
           self.path.flatten(1);
           self.path.simplify(3);
+
+
+
+
         } else {
           //self.path.simplify();
-          self.path.flatten(40/val);
+          //self.path.flatten(40/val);
+          this.back(true)
         }
         this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
-        this.currentIndex++
+        //this.currentIndex++
 
         this.drawCircles()
       }
@@ -1285,6 +1297,9 @@ canvas[resize] {
     height: 570px;
   
 }
+.btn-wrap{
+  margin-bottom: 25px;
+}
 .buttons-wrap{
   margin-left: 35px;
 }
@@ -1303,22 +1318,99 @@ canvas[resize] {
   height: 500px;
   
 }
+.btn-wrap{
+  margin-bottom: 23px;
+}
 .buttons-wrap{
   margin-left: 20px;
 }
   .btn-tool{
-  font-family: 'Roboto', sans-serif;
   font-size: 11px;
   letter-spacing: 2px;
   width: 195px;
   height: 35px;
 }
 .btn-tool-arrow{
-  font-family: 'Roboto', sans-serif;
   font-size: 11px;
   letter-spacing: 2px;
   width: 93px;
   height: 35px;
+}
+}
+@media (max-width: 890px) {
+  canvas[resize] {
+  width: 320px;
+  height: 400px;
+}
+.btn-wrap{
+  margin-bottom: 20px;
+}
+.buttons-wrap{
+  margin-left: 15px;
+}
+  .btn-tool{
+  font-size: 9px;
+  width: 175px;
+  height: 30px;
+}
+.btn-tool-arrow{
+  font-size: 9px;
+  width: 82px;
+  height: 30px;
+}
+}
+@media (max-width: 700px) {
+  .buttons-block{
+    height: 80%;
+  }
+  canvas[resize] {
+  width: 280px;
+  height: 350px;
+}
+.btn-wrap{
+  margin-bottom: 18px;
+}
+.buttons-wrap{
+  margin-left: 12px;
+}
+  .btn-tool{
+  font-size: 8px;
+  width: 155px;
+  letter-spacing: 1px;
+  height: 26px;
+}
+.btn-tool-arrow{
+  font-size: 8px;
+  width: 72px;
+  letter-spacing: 1px;
+  height: 26px;
+}
+}
+@media (max-width: 570px) {
+  .buttons-block{
+    height: 80%;
+  }
+  canvas[resize] {
+  width: 280px;
+  height: 350px;
+}
+.btn-wrap{
+  margin-bottom: 18px;
+}
+.buttons-wrap{
+  margin-left: 12px;
+}
+  .btn-tool{
+  font-size: 8px;
+  width: 155px;
+  letter-spacing: 1px;
+  height: 26px;
+}
+.btn-tool-arrow{
+  font-size: 8px;
+  width: 72px;
+  letter-spacing: 1px;
+  height: 26px;
 }
 }
 </style>
