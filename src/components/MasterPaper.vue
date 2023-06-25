@@ -13,7 +13,7 @@
             @clearHandler="clearHandler"
             @nextButton="changeIndex"
             @setPathCurveExternal="setPathCurveExternal"
-            :externalPathCurveCall="externalPathCurveCall"
+            :returnLastVertionTrigger="returnLastVertionTrigger"
         />
       </div>
       <div class="col-2"/>
@@ -29,7 +29,7 @@ export default {
     canDraw: true,
   }),
   props: {
-    externalPathCurveCall: Boolean,
+    returnLastVertionTrigger: Boolean,
   },
   methods: {
     setPathCurveExternal(val){

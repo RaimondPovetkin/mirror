@@ -48,7 +48,7 @@ export default {
     toDrawPage(){
       this.$router.push('/draw')
     }
-  }
+  },
 }
 </script>
 
@@ -133,6 +133,7 @@ export default {
 }
 .third-word{
   font-size: 38px;
+
 }
 .description{
   margin-top: 25px;

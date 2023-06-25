@@ -25,6 +25,25 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Kelly+Slab&family=Sofia+Sans:ital,wght@1,300&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Kelly+Slab&family=Roboto:wght@300&family=Sofia+Sans:ital,wght@1,300&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Kelly+Slab&family=Poiret+One&family=Roboto:wght@300&family=Sofia+Sans:ital,wght@1,300&display=swap');
+
+@font-face {
+  font-family: 'Poiret One';
+  src: url('assets/PoiretOne-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Sofia Sans';
+  src: url('assets/SofiaSans-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Bahamas Heavy';
+  src: url('assets/bahamasheavyboldcyr_boldcyr.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 *{
   margin: 0;
   padding: 0;
@@ -36,6 +55,32 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+/* width */
+::-webkit-scrollbar {
+  width: 20px;
+}
+
+/* Track */
+::-webkit-scrollbar{
+  box-shadow: inset 0 0 5px #b4b4b4;
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #3b3536;
+  border-radius: 10px;
+  width: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #231f20;
+  width: 5px;
 }
 .button{
   margin-top: 15px;

@@ -1,5 +1,5 @@
 <template>
-  <div class="first-page">
+  <div class="first-page" id="butter">
     <title-page/>
     <slider-home/>
   </div>
@@ -10,7 +10,14 @@ import sliderHome from "@/components/sliderHome";
 import TitlePage from "@/components/titlePage";
 export default {
   name: "FirstPage",
-  components: {TitlePage, sliderHome}
+  components: {TitlePage, sliderHome},
+  mounted() {
+    var options = {
+      wrapperDamper: 0.05,
+      cancelOnTouch: true
+    };
+    window.butter.init(options);
+  }
 }
 </script>
 
@@ -18,6 +25,7 @@ export default {
 .first-page{
   animation: 1s linear 0s alternate opacity-animation;
 }
+
 @keyframes opacity-animation {
   from {
     opacity: 0;

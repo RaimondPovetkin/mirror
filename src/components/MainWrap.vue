@@ -121,8 +121,19 @@ export default {
     },
   },
   methods: {
-    frame3(){
-      this.$emit('externalPath')
+    addBackSurface(){
+      var planeGeom = new THREE.PlaneGeometry(20, 20);
+      var planeMtl = new THREE.MeshPhongMaterial({
+        color: 0x89bdd3
+      });
+      var plane = new THREE.Mesh(planeGeom, planeMtl);
+      plane.receiveShadow = true;
+      plane.castShadow = true;
+      plane.rotation.x = -Math.PI/2;
+      plane.rotation.y = Math.PI/2;
+      plane.position.set(-4.99, -5, 0);
+      scene.add(plane);
+
     },
     toDrawPage(){
       this.$refs.popoverFrame.hide();
@@ -248,20 +259,42 @@ export default {
 
     },
     addLight(){
-      const light = new THREE.PointLight( 0xffffff );
+
+      const light5 = new THREE.HemisphereLight(0xFFFFFF, 0xB97A20, 0.5);
+      scene.add(light5);
+
+
+      const light4 = new THREE.PointLight( 0xffffff, 0.2 );
+      light4.position.copy( this.camera.position );
+      light4.position.x = -30
+      light4.position.y = -50
+      light4.position.z = -5
+      console.log(light4)
+
+
+
+      const light = new THREE.PointLight( 0xffffff, 0.6 );
       light.position.copy( this.camera.position );
-      light.position.x = -60
-      light.position.y = 20
+      light.position.x = 100
+      light.position.y = 150
       light.position.z = -5
 
-      const light2 = new THREE.PointLight( 0xffffff );
+      const light2 = new THREE.PointLight( 0xffffff,0.3 );
       light2.position.copy( this.camera.position );
-      light2.position.x = 60
-      light2.position.y = -80
-      light2.position.z = 50
+      light2.position.x = -40
+      light2.position.y = -50
+      light2.position.z = 30
 
-      scene.add( light2 );
-      scene.add( light );
+      var spotLight = new THREE.PointLight( 0xffffff, 0.4);
+      spotLight.position.set( 40, -40, 20 );
+      spotLight.castShadow = true;
+      spotLight.shadow.mapSize.width = 3000;
+      spotLight.shadow.mapSize.height = 3000;
+
+      scene.add( spotLight );
+      //scene.add( light2 );
+      //scene.add( light );
+      scene.add( light4 );
     },
     onMouseMoveT(){
       event.preventDefault();
@@ -334,6 +367,8 @@ export default {
             // root.rotation.x=59.7
             // root.rotation.y=0.25
             root.rotation.z= Math.PI
+            root.receiveShadow = true;
+            root.castShadow = true;
             scene.add(gltf);
             this.preloader = false
             console.log('good')
@@ -351,6 +386,7 @@ export default {
       renderer = new THREE.WebGLRenderer();
       renderer.setSize(window.innerWidth-30, window.innerHeight);
       renderer.setClearColor(0xb9d3ff, 1); // Set background color
+      renderer.shadowMap.enabled = true;
       // Here and the official website is different because I want to add an element in Canvas, with the POSITION: Absolute can be the element and the three.js model object to coexist.
       let container = document.getElementById('container');
       container.appendChild(renderer.domElement);
@@ -378,7 +414,7 @@ export default {
     },
     // Method for double-click trigger
     onMouseDblclick(event) {
-      console.log(event)
+      //console.log(event)
       // Get the array of RayCaster and all models, where the elements are sorted by distance, the closer the more
       var intersects = this.getIntersects(event);
       // Get the selected Mesh object
@@ -439,6 +475,8 @@ export default {
       meshFormMir.scale.y=0.4
       meshFormMir.scale.z=0.4
       meshFormMir.name = 'MirorBack'
+      meshFormMir.receiveShadow = true;
+      meshFormMir.castShadow = true;
       scene.add( meshFormMir );
     },
     removeMeshes(){
@@ -468,6 +506,7 @@ export default {
       }
 
       this.removeMeshes()
+      this.addBackSurface()
       this.frameIndex = 0
       var shapeCURVE = new THREE.Shape();
 
@@ -515,6 +554,8 @@ export default {
       meshForm.scale.x=0.4
       meshForm.scale.y=0.4
       meshForm.scale.z=0.4
+      meshForm.receiveShadow = true;
+      meshForm.castShadow = true;
       scene.add( meshForm );
 
     },
@@ -522,11 +563,13 @@ export default {
       this.frameIndex = 1
       this.removeMeshes()
       this.setMirorBack()
+      this.addBackSurface()
     },
     setFrame3(){
 
       this.removeMeshes()
       this.setMirorBack()
+      this.addBackSurface()
       this.frameIndex = 2
 
       const loader = new THREE.TextureLoader();
@@ -589,6 +632,8 @@ export default {
       mesh2.scale.x=0.4
       mesh2.scale.y=0.4
       mesh2.scale.z=0.4
+      mesh2.receiveShadow = true;
+      mesh2.castShadow = true;
       scene.add( mesh2 );
 
     }

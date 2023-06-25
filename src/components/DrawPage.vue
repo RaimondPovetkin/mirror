@@ -16,14 +16,13 @@
           <master-paper
             @changeIndex="setActiveItem"
             @setPathCurveExternal="setPathCurveExternal"
-            :externalPathCurveCall="externalPathCurveCall"
+            :returnLastVertionTrigger="returnLastVertionTrigger"
           />
         </el-carousel-item>
         <el-carousel-item>
           <!-- <h3 text="2xl" justify="center">222</h3> -->
           <main-wrap
             @changeIndex="setActiveItem"
-            @externalPath="externalPathCall"
             :pathCurve="pathCurve"
             :pathCurveExternal="pathCurveExternal"
           />
@@ -48,10 +47,10 @@ import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue';
 export default {
   name: "DrawPage",
   data: () => ({
+    returnLastVertionTrigger:false,
     upHere:false,
     pathCurve: null,
     pathCurveExternal: null,
-    externalPathCurveCall: false,
     widthScreen:window.innerWidth
   }),
   components:{
@@ -63,15 +62,15 @@ export default {
   //   }
   // },
   methods: {
-    externalPathCall(){
-      this.externalPathCurveCall = true
-    },
     setPathCurveExternal(val){
       console.log(val)
       this.pathCurveExternal = val
     },
     setActiveItem(index, val) {
         this.pathCurve=val
+        if(index==0){
+          this.returnLastVertionTrigger = !this.returnLastVertionTrigger
+        }
         this.$refs.carousel.setActiveItem(index);
       }
   }

@@ -3,6 +3,7 @@
   <div style=" display: flex; justify-content: center; padding-left: 14%;">
     <div>
       <canvas :id="canvasId" resize="true" class="canvas-style" v-on:mousedown="mouseDown"/>
+      <div class="sizeMirriorCanvas">1600 ✖ 2000 мм</div>
     </div>
     <div class="buttons-block">
       <div class="buttons-wrap">
@@ -13,26 +14,26 @@
           ОЧИСТИТЬ
         </el-button>
         <div style="display: flex; justify-content: space-between; width: 100%;">
-          <el-button @click="back(false)" class="btn-wrap btn-tool-arrow">
+          <el-button :disabled="!currentIndex" @click="back(false)" class="btn-wrap btn-tool-arrow">
           <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <Undo />
           </el-icon>
           НАЗАД
         </el-button>
-        <el-button @click="forward" class="btn-wrap btn-tool-arrow">
+        <el-button :disabled="pathHistory.length-1 == currentIndex || !dragMode" @click="forward" class="btn-wrap btn-tool-arrow">
           <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <Redo />
           </el-icon>
           ВПЕРЁД
         </el-button>
         </div>
-        <el-button @click="changeScale" class="btn-wrap btn-tool">
+        <el-button :disabled="!dragMode" @click="changeScale" class="btn-wrap btn-tool">
           <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <ArrowExpand />
           </el-icon>
           МАСШТАБ
         </el-button>
-        <el-button @click="curveEditorHandler" class="btn-wrap btn-tool">
+        <el-button :disabled="!dragMode" @click="curveEditorHandler" class="btn-wrap btn-tool">
           <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <VectorCurve />
           </el-icon>
@@ -40,13 +41,11 @@
         </el-button>
         <div style=" display: flex; flex-direction: column;">
           <label for="volume">СГЛАЖИВАНИЕ</label>
-          <input type="range" id="volume" name="volume" min="2" max="30" @input="yyu" :disabled="!dragMode || fewSegments" v-model="simpValue">
+          <input ref="rate" type="range" id="volume" min="2" max="30" value="2" @change="uuy" @input="inputSimplify" :disabled="!dragMode || fewSegments">
         </div>
         <el-button @click="goToDrawPage">
           NEXT
         </el-button>
-        currentIndex:{{currentIndex}}
-        pathHistory.length:{{ pathHistory.length}}
       </div>
     </div>
   </div>
@@ -67,6 +66,7 @@ export default {
   props: {
     canvasId:String,
     dragMode: Boolean,
+    returnLastVertionTrigger: Boolean,
   },
   emits: ['clearSimp', 'clearHandler', 'nextButton'],
   data: () => ({
@@ -103,8 +103,33 @@ export default {
     scope: null
   }),
   methods: {
-    yyu(event){
-      console.log(event)
+    inputSimplify(event){
+      let self = this
+      if(this.scaleMode){
+        this.changeScale()
+        this.deleteRotationArrows()
+      }
+      if(this.simpValue < event.target.valueAsNumber) {
+        this.currentIndex++
+        let lastPath=this.pathHistory[this.pathHistory.length-1].data
+        this.$emit('clearSimp')
+        self.path = new paper.Path(lastPath)
+        self.path.strokeColor = 'black';
+        self.path.fillColor = 'red';
+        self.path.flatten(1);
+        self.path.simplify(4);
+      } else {
+        if(this.simpValue-1 == event.target.valueAsNumber){
+          this.back(true)
+        }
+      }
+      this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
+        //this.currentIndex++
+      this.deletePathCircles()
+      this.deleteSizeMirror()
+      this.drawCircles()
+      this.drawSize()
+      this.simpValue = event.target.valueAsNumber
     },
     getIconSize(){
       if(window.innerWidth<890){
@@ -135,7 +160,12 @@ export default {
       this.scope.project._children[0]._children.find(i=>i.className == "Path").flatten(1);
       console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
       console.log(self.path.getCrossings(self.path))
-      //this.$emit('nextButton',this.scope.project._children[0]._children.find(i=>i.className == "Path").segments)
+      let copy = self.path.clone();
+      copy.name = 'red';
+      self.path.scale(-1,1)
+      self.path.strokeColor='#ffffff'
+      self.path.fillColor='#ffffff'
+      this.$emit('nextButton',this.scope.project._children[0]._children.find(i=>i.className == "Path" && !i.name).segments)
     },
     changeNormalSizeChildren(event){
       let childrens =  this.scope.project._children[0]._children
@@ -283,6 +313,12 @@ export default {
         this.scope.project.activeLayer.children['circlePaht'].remove()
       }
     },
+    deleteSizeMirror(){
+      console.log(this.scope.project.activeLayer.children['sizeMirror'])
+      while(this.scope.project.activeLayer.children['sizeMirror']){
+        this.scope.project.activeLayer.children['sizeMirror'].remove()
+      }
+    },
     changeScale(){
       if(this.scaleMode) {
         this.scaleMode = false
@@ -347,9 +383,28 @@ export default {
         }
       }
     },
+    drawSize(){
+      let pathGeneral = this.scope.project._children[0]._children.find(i=>i.className == "Path")
+      console.log(pathGeneral)
+
+
+      console.log(document.getElementById("canvas-one").offsetWidth)
+      console.log(document.getElementById("canvas-one").offsetHeight)
+      let width = (1600 * pathGeneral.bounds.width) / document.getElementById("canvas-one").offsetWidth
+      let height = (2000 * pathGeneral.bounds.height) / document.getElementById("canvas-one").offsetHeight
+
+
+      let sizeMirror = new paper.PointText(new paper.Point(pathGeneral.bounds.bottomCenter.x,pathGeneral.bounds.bottomCenter.y));
+      sizeMirror.justification = 'center';
+      sizeMirror.fillColor = 'black';
+      sizeMirror.content = `${Math.round(width) +' ✖ '+ Math.round(height) + ' мм'}`;
+      sizeMirror.name = 'sizeMirror';
+      sizeMirror.position.y = sizeMirror.position.y +25;
+      sizeMirror.fontSize= 15
+    },
     drawCircles(){
       if(!this.scaleMode){
-        let path = this.scope.project._children[0]._children.find(i=>i.className == "Path")
+        let path = this.path
         if(path._segments){
           for(let i=0 ; i<path._segments.length ; i++){
             let circle = new paper.Shape.Circle(new paper.Point(path._segments[i].point.x,path._segments[i].point.y), 10);
@@ -378,16 +433,14 @@ export default {
       this.curveEditorMode = false
       if(this.currentIndex>0){
         this.currentIndex--
-
-        console.log(this.pathHistory[this.currentIndex-1] ? this.pathHistory[this.currentIndex-1].simplify : undefined)
-        console.log(simplify)
-        console.log(this.pathHistory[this.currentIndex-1])
-        console.log('---------------')
-
         if(this.pathHistory[this.currentIndex-1] && this.pathHistory[this.currentIndex-1].simplify && simplify == false){
           console.log('back')
           this.back()
         } else {
+          if(simplify && this.pathHistory[this.currentIndex] && !this.pathHistory[this.currentIndex].simplify){
+            console.log('555');
+            return 0
+          }
           let self = this;
           this.$emit('clearSimp')
           self.path = new paper.Path(this.pathHistory[this.currentIndex].data)
@@ -771,6 +824,7 @@ export default {
         this.changeNormalSizeChildren(event)
       }
       this.tool.onMouseDrag = (event) => {
+        this.deleteSizeMirror()
         this.deletePathCircles()
         this.deleteMiniPathCircles()
         if(!this.dragMode) {
@@ -957,6 +1011,8 @@ export default {
               this.drawRotationArrow(event)
             }
           } else {
+            this.deleteSizeMirror()
+            this.drawSize()
             if (this.segmentDot){
               console.log(11)
               if(this.segmentPointNumber == 1){
@@ -1028,6 +1084,7 @@ export default {
           }
           this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData})
           this.currentIndex = this.pathHistory.length-1
+          this.$refs.rate.value = 2
 
 
         } else {
@@ -1040,12 +1097,15 @@ export default {
           }
           this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData})
           this.currentIndex = this.pathHistory.length-1
+          this.$refs.rate.value = 2
           console.log('HISTORY')
           console.log(this.scope.project._children[0]._children.find(i=>i.className == "Path"))
         }
         //self.path.selected = false;
         this.deletePathCircles()
-        if(this.curveEditorMode){
+        this.deleteSizeMirror()
+        this.drawSize()
+          if(this.curveEditorMode){
           this.drawCirclesCurves()
         } else {
           this.drawCircles()
@@ -1070,50 +1130,61 @@ export default {
     }
   },
   watch:{
-    simpValue(val, oldVal){
+    returnLastVertionTrigger(){
+      console.log('returnLastVertionTrigger')
+      let self = this;
+      this.$emit('clearSimp')
+      self.path = new paper.Path(this.pathHistory[this.currentIndex].data)
+      self.path.strokeColor = 'black';
+      self.path.fillColor = 'red';
+      self.path.closed = true;
+      this.drawCircles()
+      this.drawSize()
+    }
+    // simpValue(val, oldVal){
 
 
-      let self = this
-      if(this.scaleMode){
-        this.changeScale()
-        this.deleteRotationArrows()
-      }
+    //   let self = this
+    //   if(this.scaleMode){
+    //     this.changeScale()
+    //     this.deleteRotationArrows()
+    //   }
 
-      if(this.scope.project._children[0]._children.find(i=>i.className == "Path")){
-        //this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
-        //this.currentIndex++
+    //   if(this.scope.project._children[0]._children.find(i=>i.className == "Path")){
+    //     //this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
+    //     //this.currentIndex++
 
         
 
-        if(val>oldVal){
+    //     if(val>oldVal){
 
-          this.currentIndex++
-          let lastPath=this.pathHistory[this.pathHistory.length-1].data
+    //       this.currentIndex++
+    //       let lastPath=this.pathHistory[this.pathHistory.length-1].data
 
-          this.$emit('clearSimp')
-          self.path = new paper.Path(lastPath)
-          self.path.strokeColor = 'black';
-          self.path.fillColor = 'red';
-
-
-          self.path.flatten(1);
-          self.path.simplify(3);
+    //       this.$emit('clearSimp')
+    //       self.path = new paper.Path(lastPath)
+    //       self.path.strokeColor = 'black';
+    //       self.path.fillColor = 'red';
 
 
+    //       self.path.flatten(1);
+    //       self.path.simplify(4);
 
 
-        } else {
-          //self.path.simplify();
-          //self.path.flatten(40/val);
-          this.back(true)
-        }
-        this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
-        //this.currentIndex++
 
-        this.drawCircles()
-      }
 
-    }
+    //     } else {
+    //       //self.path.simplify();
+    //       //self.path.flatten(40/val);
+    //       this.back(true)
+    //     }
+    //     this.pathHistory.push({data:this.scope.project._children[0]._children.find(i=>i.className == "Path").pathData, simplify:true})
+    //     //this.currentIndex++
+
+    //     this.drawCircles()
+    //   }
+
+    // }
   }
 }
 </script>
@@ -1235,7 +1306,13 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
   border: 1px solid #464646;
 }
 
-
+.sizeMirriorCanvas{
+  font-family: 'Roboto', sans-serif;
+  font-size: 15px;
+  letter-spacing: 3px;
+  font-weight: bold;
+  margin-top: 10px;
+}
 .buttons-block{
   display: flex;
     flex-direction: column;
@@ -1256,6 +1333,20 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
     letter-spacing: 3px;
   width: 280px;
   height: 40px;
+}
+.btn-tool:disabled{
+  color: #8f8084;
+  border-color: #8f8084;
+}
+.btn-tool:disabled:hover{
+  background-color: #8f8084;
+}
+.btn-tool-arrow:disabled{
+  color: #8f8084;
+  border-color: #8f8084;
+}
+.btn-tool-arrow:disabled:hover{
+  background-color: #8f8084;
 }
 .btn-tool-arrow{
   font-family: 'Roboto', sans-serif;
