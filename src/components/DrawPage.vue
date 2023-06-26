@@ -2,7 +2,7 @@
   <div style="width: 100%; height:100%; display: flex;" class="draw-page">
     <router-link to="/">
       <el-button @mouseover="upHere = true" @mouseleave="upHere = false" class="button-home">
-        <el-icon class="arrow-left" :size="20" style="margin-top: -5px;" :style="upHere ? 'transform: translateX(-7px);  transition: .5s;': ''">
+        <el-icon class="arrow-left" :size="20" style="margin-top: -5px;" :style="(upHere && widthScreen>570) ? 'transform: translateX(-7px);  transition: .5s;': ''">
           <ArrowLeft />
         </el-icon>
         <span v-if="widthScreen>890">Белое зеркало</span>
@@ -169,6 +169,37 @@ color: #231f20;
     font-size: 11px;
     letter-spacing: 2px;
     top: 6%;
+  }
+}
+@media (max-width: 570px) {
+  .button-home{
+    width: 30px;
+    height: 30px;
+    font-size: 8px;
+    letter-spacing: 2px;
+    top: 6%;
+  }
+
+  .arrow-left-icon .material-design-icon__svg{
+    width: 17px !important;
+    height: 17px !important;
+    margin-bottom: 2px;
+    margin-left: 1px;
+  }
+  .delete-icon .material-design-icon__svg{
+    margin-left: 1px;
+  }
+  .undo-icon .material-design-icon__svg{
+    margin-left: 1px;
+  }
+  .redo-icon .material-design-icon__svg{
+    margin-left: 1px;
+  }
+  .vector-curve-icon .material-design-icon__svg{
+    margin-left: 1px;
+  }
+  .arrow-expand-icon .material-design-icon__svg{
+    margin-left: 1px;
   }
 }
 </style>

@@ -63,7 +63,6 @@ export default {
 
 /* Track */
 ::-webkit-scrollbar{
-  box-shadow: inset 0 0 5px #b4b4b4;
   width: 10px;
 }
 ::-webkit-scrollbar-track {

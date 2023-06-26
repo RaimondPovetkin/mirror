@@ -1,51 +1,55 @@
 <!--console.log('%c Oh my heavens! ', 'background: #222; color: #bada55');-->
 <template>
-  <div style=" display: flex; justify-content: center; padding-left: 14%;">
+  <div class="mainWrap">
     <div>
       <canvas :id="canvasId" resize="true" class="canvas-style" v-on:mousedown="mouseDown"/>
       <div class="sizeMirriorCanvas">1600 ✖ 2000 мм</div>
     </div>
     <div class="buttons-block">
       <div class="buttons-wrap">
-        <el-button :disabled="!dragMode" @click="clearPaper" class="btn-wrap btn-tool">
+        <div class="regular-buttons-wrap">
+          <el-button :disabled="!dragMode" @click="clearPaper" class="btn-wrap btn-tool">
           <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <Delete />
           </el-icon>
-          ОЧИСТИТЬ
+          <span v-if="widthScreen>570" class="button-text">ОЧИСТИТЬ</span>
         </el-button>
-        <div style="display: flex; justify-content: space-between; width: 100%;">
+        <div class="btn-tool-arrow-wrap">
           <el-button :disabled="!currentIndex" @click="back(false)" class="btn-wrap btn-tool-arrow">
-          <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
-            <Undo />
-          </el-icon>
-          НАЗАД
-        </el-button>
-        <el-button :disabled="pathHistory.length-1 == currentIndex || !dragMode" @click="forward" class="btn-wrap btn-tool-arrow">
-          <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
-            <Redo />
-          </el-icon>
-          ВПЕРЁД
-        </el-button>
+            <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
+              <Undo />
+            </el-icon>
+            <span v-if="widthScreen>570" class="button-text">НАЗАД</span>
+          </el-button>
+          <el-button :disabled="pathHistory.length-1 == currentIndex || !dragMode" @click="forward" class="btn-wrap btn-tool-arrow">
+            <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
+              <Redo />
+            </el-icon>
+            <span v-if="widthScreen>570" class="button-text">ВПЕРЁД</span>
+          </el-button>
         </div>
         <el-button :disabled="!dragMode" @click="changeScale" class="btn-wrap btn-tool">
           <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <ArrowExpand />
           </el-icon>
-          МАСШТАБ
+          <span v-if="widthScreen>570" class="button-text">МАСШТАБ</span>
         </el-button>
         <el-button :disabled="!dragMode" @click="curveEditorHandler" class="btn-wrap btn-tool">
           <el-icon :size="getIconSize()" style="margin-top: -5px; margin-right: 3px;">
             <VectorCurve />
           </el-icon>
-          КРИВЫЕ {{ curveEditorMode }}
+          <span v-if="widthScreen>570" class="button-text">КРИВЫЕ</span>
         </el-button>
-        <div style=" display: flex; flex-direction: column;">
-          <label for="volume">СГЛАЖИВАНИЕ</label>
-          <input ref="rate" type="range" id="volume" min="2" max="30" value="2" @change="uuy" @input="inputSimplify" :disabled="!dragMode || fewSegments">
         </div>
-        <el-button @click="goToDrawPage">
-          NEXT
-        </el-button>
+        <div class="second-row-buttons-wrap">
+          <div style=" display: flex; flex-direction: column;">
+            <label for="volume">СГЛАЖИВАНИЕ</label>
+            <input ref="rate" type="range" id="volume" min="2" max="30" value="2" @change="uuy" @input="inputSimplify" :disabled="!dragMode || fewSegments">
+          </div>
+          <el-button @click="goToDrawPage" class="select-frame-btn">
+            ВЫБРАТЬ РАМУ
+          </el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -70,6 +74,7 @@ export default {
   },
   emits: ['clearSimp', 'clearHandler', 'nextButton'],
   data: () => ({
+    widthScreen:window.innerWidth,
     pathHistory: [],
     currentIndex: 0,
     pathSelected: false,
@@ -400,7 +405,11 @@ export default {
       sizeMirror.content = `${Math.round(width) +' ✖ '+ Math.round(height) + ' мм'}`;
       sizeMirror.name = 'sizeMirror';
       sizeMirror.position.y = sizeMirror.position.y +25;
-      sizeMirror.fontSize= 15
+      if(window.innerWidth<890){
+        sizeMirror.fontSize= 11
+      } else {
+        sizeMirror.fontSize= 15
+      }
     },
     drawCircles(){
       if(!this.scaleMode){
@@ -1306,7 +1315,38 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
   border: 1px solid #464646;
 }
 
+
+
+.select-frame-btn{
+  font-family: 'Roboto', sans-serif;
+  font-size: 15px;
+  letter-spacing: 3px;
+  width: 280px;
+  height: 40px;
+  background-color: #231f20 !important;
+  color: white !important;
+}
+.select-frame-btn:hover{
+  background-color: white !important;
+  color: #231f20 !important;
+}
+.mainWrap{
+  display: flex; 
+  justify-content: center;
+  padding-left: 14%;
+}
+.btn-tool-arrow-wrap{
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.regular-buttons-wrap{
+  display: flex;
+  flex-direction: column;
+
+}
 .sizeMirriorCanvas{
+  color: #838282;
   font-family: 'Roboto', sans-serif;
   font-size: 15px;
   letter-spacing: 3px;
@@ -1329,8 +1369,8 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
 }
 .btn-tool{
   font-family: 'Roboto', sans-serif;
-    font-size: 15px;
-    letter-spacing: 3px;
+  font-size: 15px;
+  letter-spacing: 3px;
   width: 280px;
   height: 40px;
 }
@@ -1381,7 +1421,9 @@ canvas[resize] {
   -moz-box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
   box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);
 }
-
+.button-text{
+  margin-top: 0px;
+}
 @media (max-width: 1465px) {
   canvas[resize] {
     width: 456px;
@@ -1402,6 +1444,9 @@ canvas[resize] {
   font-size: 13px;
   width: 110px;
 }
+.button-text{
+  margin-top: 3px;
+}
 }
 @media (max-width: 1024px) {
   canvas[resize] {
@@ -1415,6 +1460,9 @@ canvas[resize] {
 .buttons-wrap{
   margin-left: 20px;
 }
+  .button-text{
+    margin-top: 0px;
+  }
   .btn-tool{
   font-size: 11px;
   letter-spacing: 2px;
@@ -1478,9 +1526,35 @@ canvas[resize] {
 }
 }
 @media (max-width: 570px) {
+  .mainWrap{
+  flex-direction: column;
+    padding-left: 0;
+}
   .buttons-block{
-    height: 80%;
+    height: 10%;
   }
+  .buttons-wrap{
+    flex-direction: column;
+  }
+  .btn-tool-arrow-wrap{
+    width: 80px;
+  }
+  .regular-buttons-wrap{
+    display: flex;
+    flex-direction: row;
+    width: 280px;
+    justify-content: space-between;
+    margin-left: 5px;
+    margin-top: 20px;
+  }
+  .second-row-buttons-wrap{
+    display: flex;
+    align-items: center;
+  }
+.sizeMirriorCanvas{
+  font-size: 12px;
+}
+
   canvas[resize] {
   width: 280px;
   height: 350px;
@@ -1489,19 +1563,19 @@ canvas[resize] {
   margin-bottom: 18px;
 }
 .buttons-wrap{
-  margin-left: 12px;
+  width: 94%;
 }
   .btn-tool{
   font-size: 8px;
-  width: 155px;
+  width: 36px;
   letter-spacing: 1px;
-  height: 26px;
+  height: 36px;
 }
 .btn-tool-arrow{
   font-size: 8px;
-  width: 72px;
+  width: 36px;
   letter-spacing: 1px;
-  height: 26px;
+  height: 36px;
 }
 }
 </style>
