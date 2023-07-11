@@ -1,7 +1,7 @@
 <template>
   <div style="width: 100%; height:100%; display: flex;" class="draw-page">
     <router-link to="/">
-      <el-button @mouseover="upHere = true" @mouseleave="upHere = false" class="button-home">
+      <el-button @mouseover="upHere = true" @mouseleave="upHere = false" class="button-home" v-if="widthScreen>570">
         <el-icon class="arrow-left" :size="20" style="margin-top: -5px;" :style="(upHere && widthScreen>570) ? 'transform: translateX(-7px);  transition: .5s;': ''">
           <ArrowLeft />
         </el-icon>
@@ -79,6 +79,9 @@ export default {
 </script>
 
 <style>
+.el-carousel__indicators{
+  display: none;
+}
 .draw-page{
   animation: 1s linear 0s alternate opacity-animation;
 }
@@ -177,7 +180,7 @@ color: #231f20;
     height: 30px;
     font-size: 8px;
     letter-spacing: 2px;
-    top: 6%;
+    top: 3.5%;
   }
 
   .arrow-left-icon .material-design-icon__svg{

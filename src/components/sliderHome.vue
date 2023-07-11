@@ -263,7 +263,7 @@ background-size: cover;
 border-radius: 20px 20px 0 0;
 }
 .card-sign{
-font-size: 12px;
+font-size: 15px;
 line-height: 1.2em;
 padding-top: 28px;
 padding-bottom: 12px;
@@ -271,7 +271,7 @@ padding-bottom: 12px;
 .card-button{
 color: #231f20;
 background-color: white;
-font-size: 12px;
+font-size: 15px;
 border: 1px solid #231f20;
 line-height: 1.5em;
 }
@@ -286,6 +286,8 @@ background-color: #231f20;
   }
   .card-button{
     line-height: 1.5em;
+    font-size: 13px;
+    font-weight: 900;
   }
 }
 @media (max-width: 1024px) {
@@ -296,16 +298,25 @@ background-color: #231f20;
   /*  height: 295px;*/
   /*}*/
   .card-sign{
-    font-size: 10px;
+    font-size: 14px;
     padding-top: 13px;
   }
   .card-button{
     line-height: 1em;
   }
   .card-button.button{
-    font-size: 9px;
+    font-size: 12px;
     letter-spacing: 2px;
     width: 70%;
+  }
+}
+@media (max-width: 870px) {
+  .card-sign{
+    font-size: 12px;
+    padding-top: 13px;
+  }
+  .card-button.button{
+    font-size: 10px;
   }
 }
 @media (max-width: 768px) {
@@ -322,37 +333,45 @@ width: 60%;
 font-size: 23px;
 }
 .card-sign{
-  font-size: 12px;
+  font-size: 15px;
   padding-top: 5%;
 }
 .card-button.button{
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 3px;
   padding: 1em;
 }
 }
 @media (max-width: 640px) {
   .card-sign{
-    font-size: 10px;
+    font-size: 13px;
     padding-top: 5%;
   }
   .card-button.button{
-    font-size: 9px;
+    font-size: 12px;
     letter-spacing: 2px;
     padding: .8em;
+    margin-bottom: 17px;
   }
+ .card-item{
+   height: 100%;
+ }
+ .card-image{
+   /*max-height: 213px;*/
+ }
 }
 @media (max-width: 412px) {
 .title{
-font-size: 16px;
+font-size: 20px;
 }
 .card-sign{
-  font-size: 7px;
+  font-size: 11px;
 }
 .card-button.button{
-  font-size: 6px;
+  font-size: 8px;
   letter-spacing: 2px;
   padding: .8em;
+  margin-bottom: 7px;
 }
 }
 @media (max-width: 280px) {

@@ -62,9 +62,12 @@
         },
 
         wrapperUpdate: function() {
+            //this.wrapper = document.getElementById(this.wrapperId);
             var scrollY = (document.scrollingElement != undefined) ? document.scrollingElement.scrollTop : (document.documentElement.scrollTop || 0.0);
             this.wrapperOffset += (scrollY - this.wrapperOffset) * this.wrapperDamper;
-            this.wrapper.style.transform = 'translate3d(0,' + (-this.wrapperOffset.toFixed(2)) + 'px, 0)';
+            if(this.wrapper.style){
+                this.wrapper.style.transform = 'translate3d(0,' + (-this.wrapperOffset.toFixed(2)) + 'px, 0)';
+            }
         },
 
         checkResize: function() {

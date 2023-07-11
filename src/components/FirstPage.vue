@@ -24,6 +24,7 @@ export default {
 <style scoped>
 .first-page{
   animation: 1s linear 0s alternate opacity-animation;
+  overflow: hidden;
 }
 
 @keyframes opacity-animation {

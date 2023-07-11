@@ -2,7 +2,7 @@
 <template>
   <div class="mainWrap">
     <div>
-      <canvas :id="canvasId" resize="true" class="canvas-style" v-on:mousedown="mouseDown"/>
+      <canvas :id="canvasId" resize="true" class="canvas-style" @mousedown="mouseDown"/>
       <div class="sizeMirriorCanvas">1600 ✖ 2000 мм</div>
     </div>
     <div class="buttons-block">
@@ -43,7 +43,7 @@
         </div>
         <div class="second-row-buttons-wrap">
           <div style=" display: flex; flex-direction: column;">
-            <label for="volume">СГЛАЖИВАНИЕ</label>
+            <label for="volume" class="smoothing-label">СГЛАЖИВАНИЕ</label>
             <input ref="rate" type="range" id="volume" min="2" max="30" value="2" @change="uuy" @input="inputSimplify" :disabled="!dragMode || fewSegments">
           </div>
           <el-button @click="goToDrawPage" class="select-frame-btn">
@@ -319,7 +319,6 @@ export default {
       }
     },
     deleteSizeMirror(){
-      console.log(this.scope.project.activeLayer.children['sizeMirror'])
       while(this.scope.project.activeLayer.children['sizeMirror']){
         this.scope.project.activeLayer.children['sizeMirror'].remove()
       }
@@ -390,11 +389,8 @@ export default {
     },
     drawSize(){
       let pathGeneral = this.scope.project._children[0]._children.find(i=>i.className == "Path")
-      console.log(pathGeneral)
 
 
-      console.log(document.getElementById("canvas-one").offsetWidth)
-      console.log(document.getElementById("canvas-one").offsetHeight)
       let width = (1600 * pathGeneral.bounds.width) / document.getElementById("canvas-one").offsetWidth
       let height = (2000 * pathGeneral.bounds.height) / document.getElementById("canvas-one").offsetHeight
 
@@ -714,6 +710,7 @@ export default {
       return new paper.Tool();
     },
     mouseDown() {
+      console.log('Doe')
       let self = this;
       if(!this.dragMode){
         this.tool = this.createTool(this.scope);
@@ -1134,9 +1131,14 @@ export default {
       this.scope.project.view.viewSize = ['400', '500'];
     } else if(window.innerWidth>700){
       this.scope.project.view.viewSize = ['320', '400'];
+    } else if(window.innerWidth>570){
+      this.scope.project.view.viewSize = ['280', '350'];
+    } else if(window.innerWidth>370){
+      this.scope.project.view.viewSize = ['320', '400'];
     } else {
       this.scope.project.view.viewSize = ['280', '350'];
     }
+    this.mouseDown()
   },
   watch:{
     returnLastVertionTrigger(){
@@ -1202,8 +1204,8 @@ export default {
 input[type=range] {
   height: 30px;
   -webkit-appearance: none;
-  margin: 10px 0;
-  width: 100%;
+  margin: 10px auto;
+  width: 60%;
 }
 input[type=range]:focus {
   outline: none;
@@ -1317,20 +1319,27 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
 
 
 
+
+.smoothing-label{
+  font-family: 'Roboto', sans-serif;
+  font-size: 15px;
+}
 .select-frame-btn{
   font-family: 'Roboto', sans-serif;
   font-size: 15px;
   letter-spacing: 3px;
   width: 280px;
-  height: 40px;
+  height: 43px;
   background-color: #231f20 !important;
   color: white !important;
+  margin-top: 50%;
 }
 .select-frame-btn:hover{
   background-color: white !important;
   color: #231f20 !important;
 }
 .mainWrap{
+  overflow-x: hidden;
   display: flex; 
   justify-content: center;
   padding-left: 14%;
@@ -1375,18 +1384,20 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
   height: 40px;
 }
 .btn-tool:disabled{
-  color: #8f8084;
-  border-color: #8f8084;
+  color: #ab9fa2;
+  border-color: #ab9fa2;
 }
 .btn-tool:disabled:hover{
-  background-color: #8f8084;
+  background-color: #ffffff;
+  color: #ab9fa2;
 }
 .btn-tool-arrow:disabled{
-  color: #8f8084;
-  border-color: #8f8084;
+  color: #ab9fa2;
+  border-color: #ab9fa2;
 }
 .btn-tool-arrow:disabled:hover{
-  background-color: #8f8084;
+  background-color: #ffffff;
+  color: #ab9fa2;
 }
 .btn-tool-arrow{
   font-family: 'Roboto', sans-serif;
@@ -1430,6 +1441,16 @@ canvas[resize] {
     height: 570px;
   
 }
+.smoothing-label{
+  font-size: 13px;
+}
+.select-frame-btn{
+  font-size: 15px;
+  letter-spacing: 3px;
+  width: 230px;
+  height: 40px;
+  margin-top: 35%;
+}
 .btn-wrap{
   margin-bottom: 25px;
 }
@@ -1453,6 +1474,20 @@ canvas[resize] {
   width: 400px;
   height: 500px;
   
+}
+input[type=range] {
+  margin: 5px auto;
+  width: 60%;
+}
+.smoothing-label{
+  font-size: 11px;
+}
+.select-frame-btn{
+  font-size: 13px;
+  letter-spacing: 3px;
+  width: 195px;
+  height: 40px;
+  margin-top: 30%;
 }
 .btn-wrap{
   margin-bottom: 23px;
@@ -1481,6 +1516,20 @@ canvas[resize] {
   width: 320px;
   height: 400px;
 }
+input[type=range] {
+  margin: 5px auto;
+  width: 60%;
+}
+.smoothing-label{
+  font-size: 9px;
+}
+.select-frame-btn{
+  font-size: 11px;
+  letter-spacing: 3px;
+  width: 175px;
+  height: 32px;
+  margin-top: 30%;
+}
 .btn-wrap{
   margin-bottom: 20px;
 }
@@ -1505,6 +1554,20 @@ canvas[resize] {
   canvas[resize] {
   width: 280px;
   height: 350px;
+}
+input[type=range] {
+  margin: 5px auto;
+  width: 60%;
+}
+.smoothing-label{
+  font-size: 8px;
+}
+.select-frame-btn{
+  font-size: 10px;
+  letter-spacing: 3px;
+  width: 155px;
+  height: 32px;
+  margin-top: 20%;
 }
 .btn-wrap{
   margin-bottom: 18px;
@@ -1545,19 +1608,35 @@ canvas[resize] {
     width: 280px;
     justify-content: space-between;
     margin-left: 5px;
-    margin-top: 20px;
+    margin-top: 75px;
   }
   .second-row-buttons-wrap{
     display: flex;
-    align-items: center;
+    align-items: flex-end;
+    justify-content: center;
   }
 .sizeMirriorCanvas{
   font-size: 12px;
 }
 
   canvas[resize] {
-  width: 280px;
-  height: 350px;
+  width: 320px;
+  height: 400px;
+}
+input[type=range] {
+  margin: 5px 0px 0 5px;
+  width: 70%;
+}
+.smoothing-label{
+  font-size: 8px;
+  margin-right: 30px;
+}
+.select-frame-btn{
+  font-size: 10px;
+  letter-spacing: 3px;
+  width: 155px;
+  height: 32px;
+  margin-top: 0px;
 }
 .btn-wrap{
   margin-bottom: 18px;
@@ -1576,6 +1655,33 @@ canvas[resize] {
   width: 36px;
   letter-spacing: 1px;
   height: 36px;
+}
+}
+@media (max-width: 370px) {
+  canvas[resize] {
+  width: 280px;
+  height: 350px;
+}
+.regular-buttons-wrap{
+    display: flex;
+    flex-direction: row;
+    width: 250px;
+    justify-content: space-between;
+    margin-top: 90px;
+  }
+  .buttons-wrap{
+  width: 94%;
+  margin-left: 7px;
+}
+.select-frame-btn[data-v-002dd714] {
+    font-size: 9px;
+    letter-spacing: 3px;
+    width: 145px;
+    height: 32px;
+    margin-top: 0px;
+}
+.second-row-buttons-wrap{
+  width: 260px;
 }
 }
 </style>

@@ -1,9 +1,6 @@
 <template>
-  <button class="button-form" @click="toDrawPage">форма
-  </button>
+  <el-button class="button-form" @click="toDrawPage">форма</el-button>
   <!-- <button class="button-frame">рамка</button> -->
-
-
 
   <el-popover
     ref="popoverFrame"
@@ -29,10 +26,8 @@
     </div>
   </el-popover>
 
-
-
-  <button class="button-fastening" @click="fastening">крепление</button>
-  <button class="button-ordering" @click="$emit('changeIndex',2)">оформление</button>
+  <el-button class="button-fastening" @click="fastening">крепление</el-button>
+  <el-button class="button-ordering" @click="$emit('changeIndex',2)">оформление</el-button>
   <div class="preload" v-if="preloader">прелоадер</div>
   <div id="container"></div>
 </template>
@@ -57,6 +52,11 @@ export default {
   data() {
     return {
       frameIndex:0,
+
+      correctPath: [],
+      startCoord:{},
+      xGap:null,
+      yGap:null,
 
       segments: [],
       preloader: true,
@@ -122,7 +122,7 @@ export default {
   },
   methods: {
     addBackSurface(){
-      var planeGeom = new THREE.PlaneGeometry(20, 20);
+      var planeGeom = new THREE.PlaneGeometry(40, 40);
       var planeMtl = new THREE.MeshPhongMaterial({
         color: 0x89bdd3
       });
@@ -286,10 +286,10 @@ export default {
       light2.position.z = 30
 
       var spotLight = new THREE.PointLight( 0xffffff, 0.4);
-      spotLight.position.set( 40, -40, 20 );
+      spotLight.position.set( 15, -20, 10 );
       spotLight.castShadow = true;
-      spotLight.shadow.mapSize.width = 3000;
-      spotLight.shadow.mapSize.height = 3000;
+      spotLight.shadow.mapSize.width = 4000;
+      spotLight.shadow.mapSize.height = 4000;
 
       scene.add( spotLight );
       //scene.add( light2 );
@@ -304,18 +304,48 @@ export default {
 
       console.log(this.pathCurve);
       //let path = new THREE.Shape();
+      this.startCoord={}
+      this.correctPath=[]
 
+
+
+      //координаты в начало
+      let xMin = this.xGap = this.pathCurve[0].curve.points[0].x
+      let yMin = this.yGap = this.pathCurve[0].curve.points[0].y
+
+      for(let i=0; i<this.pathCurve.length;i++){
+        if(this.pathCurve[i].curve.points[3].x < xMin){
+          xMin = this.pathCurve[i].curve.points[3].x
+        }
+        if(this.pathCurve[i].curve.points[3].y < yMin){
+          yMin = this.pathCurve[i].curve.points[3].y
+        }
+      }
+      console.log(xMin, yMin);
+
+
+      for(let i=0; i<this.pathCurve.length;i++){
+        let item = {}
+        item.x = (this.pathCurve[i].curve.points[3].x - (xMin))/10
+        item.y = (this.pathCurve[i].curve.points[3].y - (yMin))/10
+        this.correctPath.push(item)
+      }
+
+
+      this.startCoord.x = (this.pathCurve[0].curve.points[0].x - (xMin))/10
+      this.startCoord.y = (this.pathCurve[0].curve.points[0].y - (yMin))/10
 
 
 
       var shapeCURVE = new THREE.Shape();
 
-      shapeCURVE.moveTo(this.pathCurve[0].curve.points[0].x /10,this.pathCurve[0].curve.points[0].y /10);
+      shapeCURVE.moveTo(this.startCoord.x,this.startCoord.y);
       let ARR = []
-      for(let i=0; i<this.pathCurve.length-1;i++){
+      for(let i=0; i<this.correctPath.length-1;i++){
         //path.bezierCurveTo(this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, this.pathCurve[i].curve.points[2].x / 10, this.pathCurve[i].curve.points[2].y / 10, this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 );
-        ARR.push(new THREE.Vector2(this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 ),)
+        ARR.push(new THREE.Vector2(this.correctPath[i].x, this.correctPath[i].y),)
       }
+      console.log(ARR)
       shapeCURVE.splineThru(ARR);
 
 
@@ -373,7 +403,7 @@ export default {
             this.preloader = false
             console.log('good')
           });
-          //});
+          // });
 
 
 
@@ -383,8 +413,8 @@ export default {
     },
     // Create a render
     createRender() {
-      renderer = new THREE.WebGLRenderer();
-      renderer.setSize(window.innerWidth-30, window.innerHeight);
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setClearColor(0xb9d3ff, 1); // Set background color
       renderer.shadowMap.enabled = true;
       // Here and the official website is different because I want to add an element in Canvas, with the POSITION: Absolute can be the element and the three.js model object to coexist.
@@ -448,11 +478,10 @@ export default {
     setMirorBack(){
       var shapeCURVE = new THREE.Shape();
 
-      shapeCURVE.moveTo(this.pathCurve[0].curve.points[0].x /10,this.pathCurve[0].curve.points[0].y /10);
+      shapeCURVE.moveTo(this.startCoord.x,this.startCoord.y);
       let ARR = []
-      for(let i=0; i<this.pathCurve.length-1;i++){
-        //path.bezierCurveTo(this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, this.pathCurve[i].curve.points[2].x / 10, this.pathCurve[i].curve.points[2].y / 10, this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 );
-        ARR.push(new THREE.Vector2(this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 ),)
+      for(let i=0; i<this.correctPath.length-1;i++){
+        ARR.push(new THREE.Vector2(this.correctPath[i].x, this.correctPath[i].y),)
       }
       shapeCURVE.splineThru(ARR);
 
@@ -510,11 +539,10 @@ export default {
       this.frameIndex = 0
       var shapeCURVE = new THREE.Shape();
 
-      shapeCURVE.moveTo(this.pathCurve[0].curve.points[0].x /10,this.pathCurve[0].curve.points[0].y /10);
+      shapeCURVE.moveTo(this.startCoord.x, this.startCoord.y);
       let ARR = []
-      for(let i=0; i<this.pathCurve.length-1;i++){
-        //path.bezierCurveTo(this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, this.pathCurve[i].curve.points[2].x / 10, this.pathCurve[i].curve.points[2].y / 10, this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 );
-        ARR.push(new THREE.Vector2(this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 ),)
+      for(let i=0; i<this.correctPath.length-1;i++){
+        ARR.push(new THREE.Vector2(this.correctPath[i].x, this.correctPath[i].y),)
       }
       shapeCURVE.splineThru(ARR);
 
@@ -592,13 +620,11 @@ export default {
 
       let points = []
 
-      points.push(new THREE.Vector3( this.pathCurve[0].curve.points[0].x / 10, this.pathCurve[0].curve.points[0].y / 10, 0 ),)
-      for(let i=0; i<this.pathCurve.length-1;i++){
-        points.push(new THREE.Vector3( this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, 0 ),)
-        //path34.bezierCurveTo(this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, this.pathCurve[i].curve.points[2].x / 10, this.pathCurve[i].curve.points[2].y / 10, this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 );
+      points.push(new THREE.Vector3( this.startCoord.x, this.startCoord.y, 0 ),)
+      for(let i=0; i<this.correctPath.length-1;i++){
+        points.push(new THREE.Vector3( this.correctPath[i].x, this.correctPath[i].y, 0 ),)
       }
-      points.push(new THREE.Vector3( this.pathCurve[this.pathCurve.length-1].curve.points[3].x / 10, this.pathCurve[this.pathCurve.length-1].curve.points[3].y / 10, 0 ),)
-      points.push(new THREE.Vector3( this.pathCurve[1].curve.points[1].x / 10, this.pathCurve[1].curve.points[1].y / 10, 0 ),)
+      points.push(new THREE.Vector3( this.correctPath[0].x, this.correctPath[0].y, 0 ),)
 
       const curve = new THREE.CatmullRomCurve3(points)
 
