@@ -1,33 +1,55 @@
 <template>
-  <el-button class="button-form" @click="toDrawPage">форма</el-button>
-  <!-- <button class="button-frame">рамка</button> -->
+  <div class="buttons-block">
+    <div class="block-wrap">
+      <el-button class="card-button button-form" @click="toDrawPage">форма</el-button>
+      <!-- <button class="button-frame">рамка</button> -->
 
-  <el-popover
-    ref="popoverFrame"
-    placement="left-start"
-    title="Title"
-    :width="150"
-    trigger="click"
-    content="this is content, this is content, this is content"
-  >
-    <template #reference>
-      <el-button class="button-frame">Рама</el-button>
-    </template>
-    <div class="frame-content-wrap">
-      <div class="frameIMG" :style="frameIndex == 0 ? 'background-color: #7a7b81' : ''" @click="setFrame1">
-        <img class="menu-image" src="../assets/frames/frame1.png">
-      </div>
-      <div class="frameIMG" :style="frameIndex == 1 ? 'background-color: #7a7b81' : ''" @click="setFrame2">
-        <img class="menu-image" src="../assets/frames/frame2.png">
-      </div>
-      <div class="frameIMG" :style="frameIndex == 2 ? 'background-color: #7a7b81' : ''" @click="setFrame3">
-        <img class="menu-image" src="../assets/frames/frame3.png">
+      <el-popover
+          v-if="widthScreen > 570"
+          ref="popoverFrame"
+          placement="left-start"
+          title="Title"
+          :width="150"
+          trigger="click"
+          content="this is content, this is content, this is content"
+      >
+        <template #reference>
+          <el-button class="card-button button-frame">Рама</el-button>
+        </template>
+        <div class="frame-content-wrap">
+          <div class="frameIMG" :style="frameIndex == 0 ? 'background-color: #7a7b81' : ''" @click="setFrame1">
+            <img class="menu-image" src="../assets/frames/frame1.png">
+          </div>
+          <div class="frameIMG" :style="frameIndex == 1 ? 'background-color: #7a7b81' : ''" @click="setFrame2">
+            <img class="menu-image" src="../assets/frames/frame2.png">
+          </div>
+          <div class="frameIMG" :style="frameIndex == 2 ? 'background-color: #7a7b81' : ''" @click="setFrame3">
+            <img class="menu-image" src="../assets/frames/frame3.png">
+          </div>
+        </div>
+      </el-popover>
+      <el-button class="button-frame" @click="openFrames=true" v-else>Рама</el-button>
+      <div class="floatingBlock" :style="openFrames ? 'bottom: -100px' : ''" v-if="widthScreen < 570">
+        <div @click="openFrames=false" style="display: flex;justify-content: flex-end; margin-right: 15px;margin-top: 15px;font-size: 20px;">✖</div>
+        <div class="frame-content-wrap" >
+          <div class="frameIMG" :style="frameIndex == 0 ? 'background-color: #7a7b81' : ''" @click="setFrame1">
+            <img class="menu-image" src="../assets/frames/frame1.png">
+          </div>
+          <div class="frameIMG" :style="frameIndex == 1 ? 'background-color: #7a7b81' : ''" @click="setFrame2">
+            <img class="menu-image" src="../assets/frames/frame2.png">
+          </div>
+          <div class="frameIMG" :style="frameIndex == 2 ? 'background-color: #7a7b81' : ''" @click="setFrame3">
+            <img class="menu-image" src="../assets/frames/frame3.png">
+          </div>
+        </div>
       </div>
     </div>
-  </el-popover>
+    <div class="block-wrap">
+      <el-button class="button-fastening" @click="fastening">крепление</el-button>
+      <el-button class="button-ordering" @click="$emit('changeIndex',2)">оформление</el-button>
+    </div>
+  </div>
 
-  <el-button class="button-fastening" @click="fastening">крепление</el-button>
-  <el-button class="button-ordering" @click="$emit('changeIndex',2)">оформление</el-button>
   <div class="preload" v-if="preloader">прелоадер</div>
   <div id="container"></div>
 </template>
@@ -53,6 +75,8 @@ export default {
     return {
       frameIndex:0,
 
+      widthScreen:window.innerWidth,
+      openFrames: false,
       correctPath: [],
       startCoord:{},
       xGap:null,
@@ -136,11 +160,11 @@ export default {
 
     },
     toDrawPage(){
-      this.$refs.popoverFrame.hide();
+      this.$refs.popoverFrame ? this.$refs.popoverFrame.hide() : null
       this.$emit('changeIndex',0)
     },
     fastening(){
-      this.$refs.popoverFrame.hide();
+      this.$refs.popoverFrame ? this.$refs.popoverFrame.hide() : null
 
 
       this.controls.maxAzimuthAngle = Infinity;
@@ -668,6 +692,16 @@ export default {
 </script>
 
 <style scoped>
+.floatingBlock{
+  width: 100%;
+  height: 360px;
+  left: 0px;
+  bottom: -400px;
+  background-color: white;
+  position: absolute;
+  z-index: 5;
+  transition: all 1s;
+}
 .preload{
   position: absolute;
   width: 100%;
@@ -719,5 +753,57 @@ export default {
 }
 .frameIMG:hover{
   background-color: #babcc2;
+}
+@media (max-width: 570px) {
+  .frame-content-wrap{
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+  }
+  .block-wrap{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 10;
+  }
+  .buttons-block{
+    display: flex;
+    width: 100%;
+    position: absolute !important;
+    bottom: 5%;
+    height: 13%;
+    justify-content: space-evenly;
+    z-index: 10;
+  }
+  .button-ordering{
+    position: relative;
+    right: 0;
+    top: 0;
+    transform: translateY(0);
+    margin: 0;
+}
+.button-frame{
+    position: relative;
+    right: 0;
+    top: 0;
+    transform: translateY(0);
+    margin: 0;
+    z-index: 7;
+}
+.button-fastening{
+    position: relative;
+    right: 0;
+    top: 0;
+    transform: translateY(0);
+    margin: 0;
+}
+.button-form{
+    position: relative;
+    right: 0;
+    top: 0;
+    transform: translateY(0);
+    margin: 0;
+    z-index: 7;
+}
 }
 </style>

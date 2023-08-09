@@ -370,7 +370,7 @@ font-size: 20px;
 .card-button.button{
   font-size: 8px;
   letter-spacing: 2px;
-  padding: .8em;
+  padding: 1.2em;
   margin-bottom: 7px;
 }
 }

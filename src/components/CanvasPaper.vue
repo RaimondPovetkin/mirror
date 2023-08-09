@@ -1,7 +1,10 @@
 <!--console.log('%c Oh my heavens! ', 'background: #222; color: #bada55');-->
 <template>
   <div class="mainWrap">
-    <div>
+    <div style="position: relative;">
+      <div class="tutirial-video-block" v-if="showTutorial">
+        <img src="../assets/tutorial.gif" @click="showTutorial=false" alt="funny GIF" class="tutirial-video"/>
+      </div>
       <canvas :id="canvasId" resize="true" class="canvas-style" @mousedown="mouseDown"/>
       <div class="sizeMirriorCanvas">1600 ✖ 2000 мм</div>
     </div>
@@ -74,6 +77,7 @@ export default {
   },
   emits: ['clearSimp', 'clearHandler', 'nextButton'],
   data: () => ({
+    showTutorial: true,
     widthScreen:window.innerWidth,
     pathHistory: [],
     currentIndex: 0,
@@ -173,7 +177,7 @@ export default {
       this.$emit('nextButton',this.scope.project._children[0]._children.find(i=>i.className == "Path" && !i.name).segments)
     },
     changeNormalSizeChildren(event){
-      let childrens =  this.scope.project._children[0]._children
+      let childrens =  this.scope.project._children[0] ? this.scope.project._children[0]._children : []
 
       // приводим детей к обычному виду
       for(let i=0; i< childrens.length;i++){
@@ -720,6 +724,7 @@ export default {
           //первая точка нашей фигуры
           self.path = self.pathCreate(self.scope);
           self.path.add(event.point);
+          this.showTutorial = false
         } else {
           this.pathSelected = false
           if(this.scaleMode){
@@ -1409,6 +1414,34 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
 .el-button+.el-button {
     margin-left: 0px;
 }
+
+
+@media (hover: hover) {
+  .el-button:hover{
+    color: white;
+    background-color: #231f20;
+  }
+}
+@media (hover: none) {
+  .el-button:active{
+    color: white;
+    background-color: #231f20;
+  }
+}
+
+
+
+.tutirial-video-block{
+  width: 100%;
+}
+.tutirial-video{
+  z-index: -10;
+  position: absolute;
+  width: inherit;
+  top: 8px;
+  height: 90%;
+  left: 0;
+}
 .el-button{
   border-radius: 50px;
   color: #231f20;
@@ -1416,8 +1449,7 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
   border: 1px solid #231f20;
 }
 .el-button:hover{
-  color: white;
-  background-color: #231f20;
+
 }
 canvas[resize] {
   width: 600px ;
@@ -1512,6 +1544,16 @@ input[type=range] {
 }
 }
 @media (max-width: 890px) {
+  .tutirial-video-block{
+    width: 100%;
+  }
+  .tutirial-video{
+    position: absolute;
+    width: inherit;
+    top: 8px;
+    height: 90%;
+    left: 0;
+  }
   canvas[resize] {
   width: 320px;
   height: 400px;
@@ -1548,6 +1590,15 @@ input[type=range] {
 }
 }
 @media (max-width: 700px) {
+  .tutirial-video-block{
+    width: 100%;
+  }
+  .tutirial-video{
+    position: absolute;
+    width: inherit;
+    top: 10px;
+    left: 0;
+  }
   .buttons-block{
     height: 80%;
   }
@@ -1589,6 +1640,18 @@ input[type=range] {
 }
 }
 @media (max-width: 570px) {
+  .tutirial-video-block{
+    width: 40%;
+  }
+  .tutirial-video{
+    top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    width: inherit;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
   .mainWrap{
   flex-direction: column;
     padding-left: 0;
@@ -1600,14 +1663,14 @@ input[type=range] {
     flex-direction: column;
   }
   .btn-tool-arrow-wrap{
-    width: 80px;
+    width: 90px;
   }
   .regular-buttons-wrap{
     display: flex;
     flex-direction: row;
     width: 280px;
     justify-content: space-between;
-    margin-left: 5px;
+    margin-left: 15px;
     margin-top: 75px;
   }
   .second-row-buttons-wrap{
@@ -1646,18 +1709,21 @@ input[type=range] {
 }
   .btn-tool{
   font-size: 8px;
-  width: 36px;
+  width: 42px;
   letter-spacing: 1px;
-  height: 36px;
+  height: 42px;
 }
 .btn-tool-arrow{
   font-size: 8px;
-  width: 36px;
+  width: 42px;
   letter-spacing: 1px;
-  height: 36px;
+  height: 42px;
 }
 }
 @media (max-width: 370px) {
+  .tutirial-video-block{
+    width: 60%;
+  }
   canvas[resize] {
   width: 280px;
   height: 350px;
@@ -1671,7 +1737,7 @@ input[type=range] {
   }
   .buttons-wrap{
   width: 94%;
-  margin-left: 7px;
+  margin-left: 4px;
 }
 .select-frame-btn[data-v-002dd714] {
     font-size: 9px;
