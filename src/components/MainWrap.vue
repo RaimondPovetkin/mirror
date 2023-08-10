@@ -42,6 +42,17 @@
             <img class="menu-image" src="../assets/frames/frame3.png">
           </div>
         </div>
+        <div class="range-block" style="display: flex;justify-content: center; margin-top: 30px">
+          <div v-if="frameIndex == 0 || frameIndex == 2" style="width: 50%;display: flex; flex-direction: column;">
+            <label for="height" class="smoothing-label">Высота</label>
+            <input style="width: 50%;" v-model="heightFrame" ref="rate" type="range" id="height" min="2" max="30">
+          </div>
+          <div v-if="frameIndex == 2" style="width: 50%;display: flex; flex-direction: column;">
+            <label for="width" class="smoothing-label">Ширина</label>
+            <input style="width: 50%;" v-model="widthFrame" ref="rate" type="range" id="width" min="2" max="30">
+          </div>
+        </div>
+
       </div>
     </div>
     <div class="block-wrap">
@@ -74,6 +85,9 @@ export default {
   data() {
     return {
       frameIndex:0,
+
+      widthFrame:5,
+      heightFrame:5,
 
       widthScreen:window.innerWidth,
       openFrames: false,
@@ -549,8 +563,6 @@ export default {
       }
     },
     setFrame1(){
-      console.log('333')
-
       const MirorBack = scene.getObjectByProperty( 'name', "MirorBack" );
       if(MirorBack){
         MirorBack.geometry.dispose();
@@ -764,7 +776,6 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    z-index: 10;
   }
   .buttons-block{
     display: flex;
@@ -773,7 +784,6 @@ export default {
     bottom: 5%;
     height: 13%;
     justify-content: space-evenly;
-    z-index: 10;
   }
   .button-ordering{
     position: relative;
@@ -788,7 +798,6 @@ export default {
     top: 0;
     transform: translateY(0);
     margin: 0;
-    z-index: 7;
 }
 .button-fastening{
     position: relative;
@@ -803,7 +812,6 @@ export default {
     top: 0;
     transform: translateY(0);
     margin: 0;
-    z-index: 7;
 }
 }
 </style>
