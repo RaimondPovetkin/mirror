@@ -430,6 +430,9 @@ export default {
       }
     },
     clearPaper(){
+      document.getElementById("canvas-one").classList.remove("grabClass");
+      document.getElementById("canvas-one").classList.remove("grabbingClass");
+      document.getElementById("canvas-one").classList.add("padClass");
       this.pathHistory= []
       this.currentIndex= 0
       this.scaleMode = false
@@ -720,6 +723,12 @@ export default {
         this.tool = this.createTool(this.scope);
       }
       this.tool.onMouseDown = (event) => {
+        console.log('STAART')
+        console.log(document.body)
+        //document.body.style.cursor = "pointer";
+        //cursor: url('assets/frames/pointer.png'),pointer;
+        //document.getElementById("canvas-one").style.cursor = "url('../assets/frames/pointer.png'),pointer";
+
         if(!this.dragMode) {
           //первая точка нашей фигуры
           self.path = self.pathCreate(self.scope);
@@ -842,6 +851,7 @@ export default {
           self.path.add(event);
           self.path.fillColor = '#efefef';
         } else {
+          document.getElementById("canvas-one").classList.add("grabbingClass");
           if(this.scaleMode){
             if(this.cornerScale){
               switch(this.cornerScale) {
@@ -1087,7 +1097,8 @@ export default {
           }
           self.path.closed = true;
           self.path.fillColor = { hue: Math.random() * 360, saturation: 1, lightness: (Math.random() - 0.5) * 0.4 + 0.4 };
-
+          console.log('THIS')
+          document.getElementById("canvas-one").classList.add("grabClass");
           self.path.simplify(30);
 
           if(this.currentIndex != this.pathHistory.length-1){
@@ -1099,6 +1110,8 @@ export default {
 
 
         } else {
+          document.getElementById("canvas-one").classList.add("grabClass");
+          document.getElementById("canvas-one").classList.remove("grabbingClass");
           if(this.scaleMode){
             this.deleteScaleRectangle()
             this.drawScaleRectangle()
@@ -1143,6 +1156,7 @@ export default {
     } else {
       this.scope.project.view.viewSize = ['280', '350'];
     }
+    document.getElementById("canvas-one").classList.add("padClass");
     this.mouseDown()
   },
   watch:{
@@ -1341,8 +1355,16 @@ canvas[resize] {
   width: 600px ;
   height: 750px ;
 }
+.padClass{
+  cursor: url('../assets/frames/pad.png') 15 15,crosshair;
+}
+.grabClass{
+  cursor: url('../assets/frames/grab2.png') 15 15,crosshair;
+}
+.grabbingClass{
+  cursor: url('../assets/frames/grabbing2.png') 15 15,crosshair;
+}
 .canvas-style {
-  cursor: crosshair;
   border-radius: 10px;
   display: block;
   margin: auto;

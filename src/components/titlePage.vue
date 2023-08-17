@@ -54,6 +54,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
+
 /*.slide-fade-enter-active {*/
 /*  transition: all .3s ease;*/
 /*}*/

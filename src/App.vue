@@ -44,6 +44,9 @@ export default {
   font-weight: normal;
   font-style: normal;
 }
+body {
+  cursor: url('assets/frames/reload.png'),auto;
+}
 *{
   margin: 0;
   padding: 0;
@@ -98,7 +101,7 @@ export default {
   color: #231f20;
   background-color: white;
   border: 1px solid #231f20;
-  cursor: pointer;
+  cursor: url('assets/frames/pointer.png'),pointer;
 }
 .text{
   -webkit-touch-callout: none; /* iOS Safari */
@@ -126,7 +129,7 @@ input[type=range]:focus {
 input[type=range]::-webkit-slider-runnable-track {
   width: 100%;
   height: 30px;
-  cursor: pointer;
+  cursor: url('assets/frames/pointer.png'),pointer;
   animate: 0.2s;
   box-shadow: 0px 0px 0px #353535;
   background: #b4a4a1;
@@ -140,7 +143,7 @@ input[type=range]::-webkit-slider-thumb {
   width: 28px;
   border-radius: 29px;
   background: #231f20;
-  cursor: pointer;
+  cursor: url('assets/frames/pointer.png'),pointer;
   -webkit-appearance: none;
   margin-top: 0px;
 }
@@ -150,7 +153,7 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 input[type=range]::-moz-range-track {
   width: 100%;
   height: 30px;
-  cursor: pointer;
+  cursor: url('assets/frames/pointer.png'),pointer;
   animate: 0.2s;
   box-shadow: 0px 0px 0px #353535;
   background: #b4a4a1;
@@ -164,12 +167,12 @@ input[type=range]::-moz-range-thumb {
   width: 28px;
   border-radius: 29px;
   background: #231f20;
-  cursor: pointer;
+  cursor: url('assets/frames/pointer.png'),pointer;
 }
 input[type=range]::-ms-track {
   width: 100%;
   height: 30px;
-  cursor: pointer;
+  cursor: url('assets/frames/pointer.png'),pointer;
   animate: 0.2s;
   background: transparent;
   border-color: transparent;
@@ -195,7 +198,7 @@ input[type=range]::-ms-thumb {
   width: 28px;
   border-radius: 29px;
   background: #231f20;
-  cursor: pointer;
+  cursor: url('assets/frames/pointer.png'),pointer;
 }
 input[type=range]:focus::-ms-fill-lower {
   background: #b4a4a1;
@@ -215,14 +218,14 @@ input[type=range]:disabled::-webkit-slider-thumb {
   width: 28px;
   border-radius: 29px;
   background: #6d6265;
-  cursor: pointer;
+  cursor: url('assets/frames/pointer.png'),pointer;
   -webkit-appearance: none;
   margin-top: 0px;
 }
 input[type=range]:disabled::-webkit-slider-runnable-track {
   width: 100%;
   height: 30px;
-  cursor: pointer;
+  cursor: url('assets/frames/pointer.png'),pointer;
   animate: 0.2s;
   box-shadow: 0px 0px 0px #353535;
   background: #dbc8c4;
@@ -247,6 +250,7 @@ input[type=range]:disabled::-webkit-slider-runnable-track {
     padding-right: 18px;
   }
 }
+
 /*.fade-leave-active {*/
 
 /*  transition: opacity 2s;*/
