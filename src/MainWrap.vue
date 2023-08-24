@@ -1,84 +1,38 @@
 <template>
-  <div class="buttons-block">
-    <div class="block-wrap">
-      <el-button class="card-button button-form" @click="toDrawPage">форма</el-button>
-      <!-- <button class="button-frame">рамка</button> -->
-
-      <el-popover
-          v-if="widthScreen > 570"
-          ref="popoverFrame"
-          placement="left-start"
-          :width="frameIndex == 0 || frameIndex == 2 ? 300 : 150"
-          trigger="click"
-          content="this is content, this is content, this is content"
-      >
-        <template #reference>
-          <el-button class="card-button button-frame">Рама</el-button>
-        </template>
-        <div style="display: flex;">
-
-          <div style="display: flex; flex-direction: column; align-items: center">
-            <div v-if="frameIndex == 0 || frameIndex == 2" style="display: flex; flex-direction: column; align-items: center">
-              <label for="height" class="smoothing-label">Высота</label>
-              <input v-model="heightFrame" ref="rate" @input="inputHeight" type="range" id="height" min="5" max="30">
-            </div>
-
-
-            <div v-if="frameIndex == 2" style="display: flex; flex-direction: column; margin-top: 20px; align-items: center">
-              <label for="height" class="smoothing-label">Ширина</label>
-              <input v-model="widthFrame" ref="rate" type="range" id="width" min="2" max="30">
-            </div>
-          </div>
+  <button class="button-form" @click="toDrawPage">форма
+  </button>
+  <!-- <button class="button-frame">рамка</button> -->
 
 
 
-          <div class="frame-content-wrap">
-            <div class="frameIMG" :style="frameIndex == 0 ? 'background-color: #7a7b81' : ''" @click="setFrame1">
-              <img class="menu-image" src="../assets/frames/frame1.png">
-            </div>
-            <div class="frameIMG" :style="frameIndex == 1 ? 'background-color: #7a7b81' : ''" @click="setFrame2">
-              <img class="menu-image" src="../assets/frames/frame2.png">
-            </div>
-            <div class="frameIMG" :style="frameIndex == 2 ? 'background-color: #7a7b81' : ''" @click="setFrame3">
-              <img class="menu-image" src="../assets/frames/frame3.png">
-            </div>
-          </div>
-        </div>
-
-      </el-popover>
-      <el-button class="card-button button-frame" @click="openFrames=true" v-else>Рама</el-button>
-      <div class="floatingBlock" :style="openFrames ? 'bottom: -100px' : ''" v-if="widthScreen < 570">
-        <div @click="openFrames=false" style="display: flex;justify-content: flex-end; margin-right: 15px;margin-top: 15px;font-size: 20px;">✖</div>
-        <div class="frame-content-wrap" >
-          <div class="frameIMG" :style="frameIndex == 0 ? 'background-color: #7a7b81' : ''" @click="setFrame1">
-            <img class="menu-image" src="../assets/frames/frame1.png">
-          </div>
-          <div class="frameIMG" :style="frameIndex == 1 ? 'background-color: #7a7b81' : ''" @click="setFrame2">
-            <img class="menu-image" src="../assets/frames/frame2.png">
-          </div>
-          <div class="frameIMG" :style="frameIndex == 2 ? 'background-color: #7a7b81' : ''" @click="setFrame3">
-            <img class="menu-image" src="../assets/frames/frame3.png">
-          </div>
-        </div>
-        <div class="range-block" style="display: flex;justify-content: center; margin-top: 30px">
-          <div v-if="frameIndex == 0 || frameIndex == 2" style="width: 50%;display: flex; flex-direction: column;">
-            <label for="height" class="smoothing-label">Высота</label>
-            <input style="width: 50%;" v-model="heightFrame" ref="rate" type="range" id="height" min="10" max="30">
-          </div>
-          <div v-if="frameIndex == 2" style="width: 50%;display: flex; flex-direction: column;">
-            <label for="width" class="smoothing-label">Ширина</label>
-            <input style="width: 50%;" v-model="widthFrame" ref="rate" type="range" id="width" min="2" max="30">
-          </div>
-        </div>
-
+  <el-popover
+    ref="popoverFrame"
+    placement="left-start"
+    title="Title"
+    :width="150"
+    trigger="click"
+    content="this is content, this is content, this is content"
+  >
+    <template #reference>
+      <el-button class="button-frame">Рама</el-button>
+    </template>
+    <div class="frame-content-wrap">
+      <div class="frameIMG" :style="frameIndex == 0 ? 'background-color: #7a7b81' : ''" @click="setFrame1">
+        <img class="menu-image" src="../assets/frames/frame1.png">
+      </div>
+      <div class="frameIMG" :style="frameIndex == 1 ? 'background-color: #7a7b81' : ''" @click="setFrame2">
+        <img class="menu-image" src="../assets/frames/frame2.png">
+      </div>
+      <div class="frameIMG" :style="frameIndex == 2 ? 'background-color: #7a7b81' : ''" @click="setFrame3">
+        <img class="menu-image" src="../assets/frames/frame3.png">
       </div>
     </div>
-    <div class="block-wrap">
-      <el-button class="card-button button-fastening" @click="fastening">крепление</el-button>
-      <el-button class="card-button button-ordering" @click="$emit('changeIndex',2)">оформление</el-button>
-    </div>
-  </div>
+  </el-popover>
 
+
+
+  <button class="button-fastening" @click="fastening">крепление</button>
+  <button class="button-ordering" @click="$emit('changeIndex',2)">оформление</button>
   <div class="preload" v-if="preloader">прелоадер</div>
   <div id="container"></div>
 </template>
@@ -103,16 +57,6 @@ export default {
   data() {
     return {
       frameIndex:0,
-
-      widthFrame:5,
-      heightFrame:20,
-
-      widthScreen:window.innerWidth,
-      openFrames: false,
-      correctPath: [],
-      startCoord:{},
-      xGap:null,
-      yGap:null,
 
       segments: [],
       preloader: true,
@@ -177,85 +121,15 @@ export default {
     },
   },
   methods: {
-    inputHeight(){
-      console.log(this.heightFrame)
-      let frame1 = scene.children.find(i=>i.name=="frame1")
-      let frame3 = scene.children.find(i=>i.name=="frame3")
-      let mirror = scene.children.find(i=>i.name=="mirror")
-
-      if(frame1){
-        var shapeCURVE = new THREE.Shape();
-        shapeCURVE.moveTo(this.startCoord.x, this.startCoord.y);
-        let ARR = []
-        for(let i=0; i<this.correctPath.length-1;i++){
-          ARR.push(new THREE.Vector2(this.correctPath[i].x, this.correctPath[i].y),)
-        }
-        shapeCURVE.splineThru(ARR);
-        let extrudeGeom2 = new THREE.ExtrudeGeometry( shapeCURVE, {
-          curveSegments: 162,
-          depth: this.heightFrame/10,
-          bevelEnabled: false,  // Don't bevel the edges
-        });
-          frame1.geometry = extrudeGeom2
-          mirror.position.x = (this.heightFrame/10)
-      }
-      if(frame3){
-
-        let points = []
-        points.push(new THREE.Vector3( this.startCoord.x, this.startCoord.y, 0 ),)
-        for(let i=0; i<this.correctPath.length-1;i++){
-          points.push(new THREE.Vector3( this.correctPath[i].x, this.correctPath[i].y, 0 ),)
-        }
-        points.push(new THREE.Vector3( this.correctPath[0].x, this.correctPath[0].y, 0 ),)
-        const curve = new THREE.CatmullRomCurve3(points)
-        const extrudeSettings2 = {
-          steps: 1400,
-          bevelEnabled: true,
-          bevelThickness: 1,
-          bevelSegments: 10,
-          bevelSize: 1,
-          extrudePath: curve
-        };
-        let height = this.heightFrame/10
-        let  shape2 = new THREE.Shape();
-        shape2.moveTo( -0.5-height,-0.8 );
-        shape2.lineTo( -0.5-height, 0.8 );
-        shape2.lineTo( -0.45-height, 0.9 );
-        shape2.lineTo( -0.4-height, 0.95 );
-        shape2.lineTo( -0.4-height, 1 );
-        shape2.lineTo( 3.5, 1 );
-        shape2.lineTo( 3.5, -1 );
-        shape2.lineTo( -0.3-height, -1 );
-        shape2.lineTo( -0.4-height, -0.95 );
-        shape2.lineTo( -0.45-height, -0.9 );
-
-        const geometry2 = new THREE.ExtrudeGeometry( shape2, extrudeSettings2 );
-        frame3.geometry = geometry2
-      }
-      let t5 = (Math.abs(0.5-(this.heightFrame/10))*100) / 2.5
-      let yu = (5.3 + (t5/100 * 1.5))
-      mirror.position.x = mirror.position.x - yu
-    },
-    addBackSurface(){
-      var planeGeom = new THREE.PlaneGeometry(40, 40);
-      var planeMtl = new THREE.MeshPhongMaterial({
-        color: 0x89bdd3
-      });
-      var plane = new THREE.Mesh(planeGeom, planeMtl);
-      plane.receiveShadow = true;
-      plane.castShadow = true;
-      plane.rotation.x = -Math.PI/2;
-      plane.rotation.y = Math.PI/2;
-      plane.position.set(-4.99, -5, 0);
-      scene.add(plane);
-
+    frame3(){
+      this.$emit('externalPath')
     },
     toDrawPage(){
-      this.$refs.popoverFrame ? this.$refs.popoverFrame.hide() : null
+      this.$refs.popoverFrame.hide();
       this.$emit('changeIndex',0)
     },
     fastening(){
-      this.$refs.popoverFrame ? this.$refs.popoverFrame.hide() : null
+      this.$refs.popoverFrame.hide();
 
 
       this.controls.maxAzimuthAngle = Infinity;
@@ -299,6 +173,8 @@ export default {
       if (!mouseDown) {
         return;
       }
+      console.log('move')
+
       evt.preventDefault();
 
       var deltaX = evt.clientX - mouseX,
@@ -372,42 +248,20 @@ export default {
 
     },
     addLight(){
-
-      const light5 = new THREE.HemisphereLight(0xFFFFFF, 0xB97A20, 0.5);
-      scene.add(light5);
-
-
-      const light4 = new THREE.PointLight( 0xffffff, 0.2 );
-      light4.position.copy( this.camera.position );
-      light4.position.x = -30
-      light4.position.y = -50
-      light4.position.z = -5
-      console.log(light4)
-
-
-
-      const light = new THREE.PointLight( 0xffffff, 0.6 );
+      const light = new THREE.PointLight( 0xffffff );
       light.position.copy( this.camera.position );
-      light.position.x = 100
-      light.position.y = 150
+      light.position.x = -60
+      light.position.y = 20
       light.position.z = -5
 
-      const light2 = new THREE.PointLight( 0xffffff,0.3 );
+      const light2 = new THREE.PointLight( 0xffffff );
       light2.position.copy( this.camera.position );
-      light2.position.x = -40
-      light2.position.y = -50
-      light2.position.z = 30
+      light2.position.x = 60
+      light2.position.y = -80
+      light2.position.z = 50
 
-      var spotLight = new THREE.PointLight( 0xffffff, 0.4);
-      spotLight.position.set( 15, -20, 10 );
-      spotLight.castShadow = true;
-      spotLight.shadow.mapSize.width = 4000;
-      spotLight.shadow.mapSize.height = 4000;
-
-      scene.add( spotLight );
-      //scene.add( light2 );
-      //scene.add( light );
-      scene.add( light4 );
+      scene.add( light2 );
+      scene.add( light );
     },
     onMouseMoveT(){
       event.preventDefault();
@@ -417,48 +271,18 @@ export default {
 
       console.log(this.pathCurve);
       //let path = new THREE.Shape();
-      this.startCoord={}
-      this.correctPath=[]
 
-
-
-      //координаты в начало
-      let xMin = this.xGap = this.pathCurve[0].curve.points[0].x
-      let yMin = this.yGap = this.pathCurve[0].curve.points[0].y
-
-      for(let i=0; i<this.pathCurve.length;i++){
-        if(this.pathCurve[i].curve.points[3].x < xMin){
-          xMin = this.pathCurve[i].curve.points[3].x
-        }
-        if(this.pathCurve[i].curve.points[3].y < yMin){
-          yMin = this.pathCurve[i].curve.points[3].y
-        }
-      }
-      console.log(xMin, yMin);
-
-
-      for(let i=0; i<this.pathCurve.length;i++){
-        let item = {}
-        item.x = (this.pathCurve[i].curve.points[3].x - (xMin))/10
-        item.y = (this.pathCurve[i].curve.points[3].y - (yMin))/10
-        this.correctPath.push(item)
-      }
-
-
-      this.startCoord.x = (this.pathCurve[0].curve.points[0].x - (xMin))/10
-      this.startCoord.y = (this.pathCurve[0].curve.points[0].y - (yMin))/10
 
 
 
       var shapeCURVE = new THREE.Shape();
 
-      shapeCURVE.moveTo(this.startCoord.x,this.startCoord.y);
+      shapeCURVE.moveTo(this.pathCurve[0].curve.points[0].x /10,this.pathCurve[0].curve.points[0].y /10);
       let ARR = []
-      for(let i=0; i<this.correctPath.length-1;i++){
+      for(let i=0; i<this.pathCurve.length-1;i++){
         //path.bezierCurveTo(this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, this.pathCurve[i].curve.points[2].x / 10, this.pathCurve[i].curve.points[2].y / 10, this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 );
-        ARR.push(new THREE.Vector2(this.correctPath[i].x, this.correctPath[i].y),)
+        ARR.push(new THREE.Vector2(this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 ),)
       }
-      console.log(ARR)
       shapeCURVE.splineThru(ARR);
 
 
@@ -469,7 +293,7 @@ export default {
         color: 0x889999
       } );
 
-      verticalMirror.position.x=-2.2-this.heightFrame/10
+      verticalMirror.position.x=-4.25
       verticalMirror.position.y=-14
       verticalMirror.position.z=8
 
@@ -478,7 +302,6 @@ export default {
       verticalMirror.scale.x=0.4
       verticalMirror.scale.y=0.4
       verticalMirror.scale.z=0.4
-      verticalMirror.name='mirror'
       scene.add( verticalMirror );
 
 
@@ -511,13 +334,11 @@ export default {
             // root.rotation.x=59.7
             // root.rotation.y=0.25
             root.rotation.z= Math.PI
-            root.receiveShadow = true;
-            root.castShadow = true;
             scene.add(gltf);
             this.preloader = false
-            console.log('good4')
+            console.log('good')
           });
-          // });
+          //});
 
 
 
@@ -527,10 +348,9 @@ export default {
     },
     // Create a render
     createRender() {
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth-30, window.innerHeight);
       renderer.setClearColor(0xb9d3ff, 1); // Set background color
-      renderer.shadowMap.enabled = true;
       // Here and the official website is different because I want to add an element in Canvas, with the POSITION: Absolute can be the element and the three.js model object to coexist.
       let container = document.getElementById('container');
       container.appendChild(renderer.domElement);
@@ -558,7 +378,7 @@ export default {
     },
     // Method for double-click trigger
     onMouseDblclick(event) {
-      //console.log(event)
+      console.log(event)
       // Get the array of RayCaster and all models, where the elements are sorted by distance, the closer the more
       var intersects = this.getIntersects(event);
       // Get the selected Mesh object
@@ -592,10 +412,11 @@ export default {
     setMirorBack(){
       var shapeCURVE = new THREE.Shape();
 
-      shapeCURVE.moveTo(this.startCoord.x,this.startCoord.y);
+      shapeCURVE.moveTo(this.pathCurve[0].curve.points[0].x /10,this.pathCurve[0].curve.points[0].y /10);
       let ARR = []
-      for(let i=0; i<this.correctPath.length-1;i++){
-        ARR.push(new THREE.Vector2(this.correctPath[i].x, this.correctPath[i].y),)
+      for(let i=0; i<this.pathCurve.length-1;i++){
+        //path.bezierCurveTo(this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, this.pathCurve[i].curve.points[2].x / 10, this.pathCurve[i].curve.points[2].y / 10, this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 );
+        ARR.push(new THREE.Vector2(this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 ),)
       }
       shapeCURVE.splineThru(ARR);
 
@@ -618,8 +439,6 @@ export default {
       meshFormMir.scale.y=0.4
       meshFormMir.scale.z=0.4
       meshFormMir.name = 'MirorBack'
-      meshFormMir.receiveShadow = true;
-      meshFormMir.castShadow = true;
       scene.add( meshFormMir );
     },
     removeMeshes(){
@@ -639,6 +458,8 @@ export default {
       }
     },
     setFrame1(){
+      console.log('333')
+
       const MirorBack = scene.getObjectByProperty( 'name', "MirorBack" );
       if(MirorBack){
         MirorBack.geometry.dispose();
@@ -647,21 +468,21 @@ export default {
       }
 
       this.removeMeshes()
-      this.addBackSurface()
       this.frameIndex = 0
       var shapeCURVE = new THREE.Shape();
 
-      shapeCURVE.moveTo(this.startCoord.x, this.startCoord.y);
+      shapeCURVE.moveTo(this.pathCurve[0].curve.points[0].x /10,this.pathCurve[0].curve.points[0].y /10);
       let ARR = []
-      for(let i=0; i<this.correctPath.length-1;i++){
-        ARR.push(new THREE.Vector2(this.correctPath[i].x, this.correctPath[i].y),)
+      for(let i=0; i<this.pathCurve.length-1;i++){
+        //path.bezierCurveTo(this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, this.pathCurve[i].curve.points[2].x / 10, this.pathCurve[i].curve.points[2].y / 10, this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 );
+        ARR.push(new THREE.Vector2(this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 ),)
       }
       shapeCURVE.splineThru(ARR);
 
       const loader = new THREE.TextureLoader();
       let extrudeGeom2 = new THREE.ExtrudeGeometry( shapeCURVE, {
         curveSegments: 162,
-        depth: this.heightFrame/10,
+        depth: 3,
         bevelEnabled: false,  // Don't bevel the edges
       });
 
@@ -685,10 +506,7 @@ export default {
       ]
 
       let meshForm = new THREE.Mesh( extrudeGeom2, materials ) ;
-
-      meshForm.name='frame1'
-
-      meshForm.position.x=-5.05
+      meshForm.position.x=-5.5
       meshForm.position.y=-14
       meshForm.position.z=8
 
@@ -697,8 +515,6 @@ export default {
       meshForm.scale.x=0.4
       meshForm.scale.y=0.4
       meshForm.scale.z=0.4
-      meshForm.receiveShadow = true;
-      meshForm.castShadow = true;
       scene.add( meshForm );
 
     },
@@ -706,13 +522,11 @@ export default {
       this.frameIndex = 1
       this.removeMeshes()
       this.setMirorBack()
-      this.addBackSurface()
     },
     setFrame3(){
 
       this.removeMeshes()
       this.setMirorBack()
-      this.addBackSurface()
       this.frameIndex = 2
 
       const loader = new THREE.TextureLoader();
@@ -735,11 +549,13 @@ export default {
 
       let points = []
 
-      points.push(new THREE.Vector3( this.startCoord.x, this.startCoord.y, 0 ),)
-      for(let i=0; i<this.correctPath.length-1;i++){
-        points.push(new THREE.Vector3( this.correctPath[i].x, this.correctPath[i].y, 0 ),)
+      points.push(new THREE.Vector3( this.pathCurve[0].curve.points[0].x / 10, this.pathCurve[0].curve.points[0].y / 10, 0 ),)
+      for(let i=0; i<this.pathCurve.length-1;i++){
+        points.push(new THREE.Vector3( this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, 0 ),)
+        //path34.bezierCurveTo(this.pathCurve[i].curve.points[1].x / 10, this.pathCurve[i].curve.points[1].y / 10, this.pathCurve[i].curve.points[2].x / 10, this.pathCurve[i].curve.points[2].y / 10, this.pathCurve[i].curve.points[3].x / 10, this.pathCurve[i].curve.points[3].y / 10 );
       }
-      points.push(new THREE.Vector3( this.correctPath[0].x, this.correctPath[0].y, 0 ),)
+      points.push(new THREE.Vector3( this.pathCurve[this.pathCurve.length-1].curve.points[3].x / 10, this.pathCurve[this.pathCurve.length-1].curve.points[3].y / 10, 0 ),)
+      points.push(new THREE.Vector3( this.pathCurve[1].curve.points[1].x / 10, this.pathCurve[1].curve.points[1].y / 10, 0 ),)
 
       const curve = new THREE.CatmullRomCurve3(points)
 
@@ -751,20 +567,15 @@ export default {
         bevelSize: 1,
         extrudePath: curve
       };
-      let height = this.heightFrame/10
 
       let  shape2 = new THREE.Shape();
-
-      shape2.moveTo( -1-height,-0.8 );
-      shape2.lineTo( -1-height, 0.8 );
-      shape2.lineTo( -0.95-height, 0.9 );
-      shape2.lineTo( -0.9-height, 0.95 );
-      shape2.lineTo( -1-height, 1 );
+      shape2.moveTo( -1,-0.8 );
+      shape2.lineTo( -1, 1 );
       shape2.lineTo( 1.5, 1 );
       shape2.lineTo( 1.5, -1 );
-      shape2.lineTo( -0.8-height, -1 );
-      shape2.lineTo( -0.9-height, -0.95 );
-      shape2.lineTo( -0.95-height, -0.9 );
+      shape2.lineTo( -0.8, -1 );
+      shape2.lineTo( -0.9, -0.95 );
+      shape2.lineTo( -0.95, -0.9 );
 
       const geometry2 = new THREE.ExtrudeGeometry( shape2, extrudeSettings2 );
 
@@ -778,9 +589,6 @@ export default {
       mesh2.scale.x=0.4
       mesh2.scale.y=0.4
       mesh2.scale.z=0.4
-      mesh2.name='frame3'
-      mesh2.receiveShadow = true;
-      mesh2.castShadow = true;
       scene.add( mesh2 );
 
     }
@@ -789,22 +597,6 @@ export default {
 </script>
 
 <style scoped>
-input[type=range] {
-  width: 80%;
-}
-.card-button{
-  width: 140px;
-}
-.floatingBlock{
-  width: 100%;
-  height: 360px;
-  left: 0px;
-  bottom: -400px;
-  background-color: white;
-  position: absolute;
-  z-index: 5;
-  transition: all 1s;
-}
 .preload{
   position: absolute;
   width: 100%;
@@ -826,25 +618,25 @@ input[type=range] {
 }
 .button-form{
   position: absolute;
-  right: 5%;
+  right: 10%;
   top: 30%;
   transform: translateY(-50%);
 }
 .button-frame{
   position: absolute;
-  right: 5%;
+  right: 10%;
   top: 40%;
   transform: translateY(-50%);
 }
 .button-fastening{
   position: absolute;
-  right: 5%;
+  right: 10%;
   top: 50%;
   transform: translateY(-50%);
 }
 .button-ordering{
   position: absolute;
-  right: 5%;
+  right: 10%;
   top: 60%;
   transform: translateY(-50%);
 }
@@ -856,53 +648,5 @@ input[type=range] {
 }
 .frameIMG:hover{
   background-color: #babcc2;
-}
-@media (max-width: 570px) {
-  .frame-content-wrap{
-    display: flex;
-    justify-content: space-evenly;
-    flex-direction: row;
-  }
-  .block-wrap{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .buttons-block{
-    display: flex;
-    width: 100%;
-    position: absolute !important;
-    bottom: 5%;
-    height: 13%;
-    justify-content: space-evenly;
-  }
-  .button-ordering{
-    position: relative;
-    right: 0;
-    top: 0;
-    transform: translateY(0);
-    margin: 0;
-}
-.button-frame{
-    position: relative;
-    right: 0;
-    top: 0;
-    transform: translateY(0);
-    margin: 0;
-}
-.button-fastening{
-    position: relative;
-    right: 0;
-    top: 0;
-    transform: translateY(0);
-    margin: 0;
-}
-.button-form{
-    position: relative;
-    right: 0;
-    top: 0;
-    transform: translateY(0);
-    margin: 0;
-}
 }
 </style>
