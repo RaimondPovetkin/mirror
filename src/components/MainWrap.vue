@@ -26,7 +26,7 @@
 
             <div v-if="frameIndex == 2" style="display: flex; flex-direction: column; margin-top: 20px; align-items: center">
               <label for="height" class="smoothing-label">Ширина</label>
-              <input v-model="widthFrame" ref="rate" type="range" id="width" min="2" max="30">
+              <input v-model="widthFrame" ref="rate" @input="inputWidth" type="range" id="width" min="0" max="70">
             </div>
           </div>
 
@@ -103,6 +103,7 @@ export default {
   data() {
     return {
       frameIndex:0,
+      sleep:false,
 
       widthFrame:5,
       heightFrame:20,
@@ -177,64 +178,87 @@ export default {
     },
   },
   methods: {
+    setTimeOut(){
+      if(!this.sleep){
+        this.sleep = true
+        setTimeout(() => {
+          this.sleep = false
+          console.log("Delayed for 1 second.");
+          let frame1 = scene.children.find(i=>i.name=="frame1")
+          let frame3 = scene.children.find(i=>i.name=="frame3")
+          let mirror = scene.children.find(i=>i.name=="mirror")
+          let mirorBack = scene.children.find(i=>i.name=="MirorBack")
+
+          let intermediateVar1 = (Math.abs(0.5-(this.heightFrame/10))*100) / 2.5
+          let intermediateVar2 = (5.3 + (intermediateVar1/100 * 1.5))
+
+          if(frame1){
+            var shapeCURVE = new THREE.Shape();
+            shapeCURVE.moveTo(this.startCoord.x, this.startCoord.y);
+            let ARR = []
+            for(let i=0; i<this.correctPath.length-1;i++){
+              ARR.push(new THREE.Vector2(this.correctPath[i].x, this.correctPath[i].y),)
+            }
+            shapeCURVE.splineThru(ARR);
+            let extrudeGeom2 = new THREE.ExtrudeGeometry( shapeCURVE, {
+              curveSegments: 162,
+              depth: this.heightFrame/10,
+              bevelEnabled: false,  // Don't bevel the edges
+            });
+              frame1.geometry = extrudeGeom2
+
+            mirror.position.x = (this.heightFrame/10)
+            mirror.position.x = mirror.position.x - intermediateVar2
+          }
+          if(frame3){
+
+            let points = []
+            points.push(new THREE.Vector3( this.startCoord.x, this.startCoord.y, 0 ),)
+            for(let i=0; i<this.correctPath.length-1;i++){
+              points.push(new THREE.Vector3( this.correctPath[i].x, this.correctPath[i].y, 0 ),)
+            }
+            points.push(new THREE.Vector3( this.correctPath[0].x, this.correctPath[0].y, 0 ),)
+            const curve = new THREE.CatmullRomCurve3(points)
+            const extrudeSettings2 = {
+              steps: 1400,
+              bevelEnabled: true,
+              bevelThickness: 1,
+              bevelSegments: 10,
+              bevelSize: 1,
+              extrudePath: curve
+            };
+            let height = this.heightFrame/10
+            let width = Math.abs(this.widthFrame/100 - 0.7)
+            let  shape2 = new THREE.Shape();
+            shape2.moveTo( 1-height,-0.8+width );
+            shape2.lineTo( 1-height, 0.8-width );
+            shape2.lineTo( 1.05-height, 0.9-width );
+            shape2.lineTo( 1.1-height, 0.95-width );
+            shape2.lineTo( 1.15-height, 1-width );
+            shape2.lineTo( 1.5, 1-width );
+            shape2.lineTo( 1.5, -1+width );
+            shape2.lineTo( 1.15-height, -1+width );
+            shape2.lineTo( 1.1-height, -0.95+width );
+            shape2.lineTo( 1.05-height, -0.9+width );
+
+            const geometry2 = new THREE.ExtrudeGeometry( shape2, extrudeSettings2 );
+            frame3.geometry = geometry2
+
+            mirorBack.position.x = (this.heightFrame/10)
+            mirorBack.position.x = mirorBack.position.x - intermediateVar2-0.25
+
+            mirror.position.x = (this.heightFrame/10)
+            mirror.position.x = mirror.position.x - intermediateVar2-0.1
+          }
+
+        }, "600");
+      }
+    },
+    inputWidth(){
+      this.setTimeOut()
+    },
     inputHeight(){
-      console.log(this.heightFrame)
-      let frame1 = scene.children.find(i=>i.name=="frame1")
-      let frame3 = scene.children.find(i=>i.name=="frame3")
-      let mirror = scene.children.find(i=>i.name=="mirror")
-
-      if(frame1){
-        var shapeCURVE = new THREE.Shape();
-        shapeCURVE.moveTo(this.startCoord.x, this.startCoord.y);
-        let ARR = []
-        for(let i=0; i<this.correctPath.length-1;i++){
-          ARR.push(new THREE.Vector2(this.correctPath[i].x, this.correctPath[i].y),)
-        }
-        shapeCURVE.splineThru(ARR);
-        let extrudeGeom2 = new THREE.ExtrudeGeometry( shapeCURVE, {
-          curveSegments: 162,
-          depth: this.heightFrame/10,
-          bevelEnabled: false,  // Don't bevel the edges
-        });
-          frame1.geometry = extrudeGeom2
-          mirror.position.x = (this.heightFrame/10)
-      }
-      if(frame3){
-
-        let points = []
-        points.push(new THREE.Vector3( this.startCoord.x, this.startCoord.y, 0 ),)
-        for(let i=0; i<this.correctPath.length-1;i++){
-          points.push(new THREE.Vector3( this.correctPath[i].x, this.correctPath[i].y, 0 ),)
-        }
-        points.push(new THREE.Vector3( this.correctPath[0].x, this.correctPath[0].y, 0 ),)
-        const curve = new THREE.CatmullRomCurve3(points)
-        const extrudeSettings2 = {
-          steps: 1400,
-          bevelEnabled: true,
-          bevelThickness: 1,
-          bevelSegments: 10,
-          bevelSize: 1,
-          extrudePath: curve
-        };
-        let height = this.heightFrame/10
-        let  shape2 = new THREE.Shape();
-        shape2.moveTo( -0.5-height,-0.8 );
-        shape2.lineTo( -0.5-height, 0.8 );
-        shape2.lineTo( -0.45-height, 0.9 );
-        shape2.lineTo( -0.4-height, 0.95 );
-        shape2.lineTo( -0.4-height, 1 );
-        shape2.lineTo( 3.5, 1 );
-        shape2.lineTo( 3.5, -1 );
-        shape2.lineTo( -0.3-height, -1 );
-        shape2.lineTo( -0.4-height, -0.95 );
-        shape2.lineTo( -0.45-height, -0.9 );
-
-        const geometry2 = new THREE.ExtrudeGeometry( shape2, extrudeSettings2 );
-        frame3.geometry = geometry2
-      }
-      let t5 = (Math.abs(0.5-(this.heightFrame/10))*100) / 2.5
-      let yu = (5.3 + (t5/100 * 1.5))
-      mirror.position.x = mirror.position.x - yu
+      this.setTimeOut()
     },
     addBackSurface(){
       var planeGeom = new THREE.PlaneGeometry(40, 40);
@@ -607,6 +631,11 @@ export default {
 
       var materialMir = new THREE.MeshBasicMaterial( { color: 0x969ea6 } );
 
+
+
+      let intermediateVar1 = (Math.abs(0.5-(this.heightFrame/10))*100) / 2.5
+      let intermediateVar2 = (5.3 + (intermediateVar1/100 * 1.5))
+
       let meshFormMir = new THREE.Mesh( extrudeGeom2, materialMir ) ;
       meshFormMir.position.x=-4.4
       meshFormMir.position.y=-14
@@ -620,6 +649,14 @@ export default {
       meshFormMir.name = 'MirorBack'
       meshFormMir.receiveShadow = true;
       meshFormMir.castShadow = true;
+
+      console.log(this.frameIndex)
+
+      if(this.frameIndex != 1){
+        meshFormMir.position.x = (this.heightFrame/10)
+        meshFormMir.position.x = meshFormMir.position.x - intermediateVar2-0.2
+      }
+
       scene.add( meshFormMir );
     },
     removeMeshes(){
@@ -701,6 +738,13 @@ export default {
       meshForm.castShadow = true;
       scene.add( meshForm );
 
+      let mirror = scene.children.find(i=>i.name=="mirror")
+      let intermediateVar1 = (Math.abs(0.5-(this.heightFrame/10))*100) / 2.5
+      let intermediateVar2 = (5.3 + (intermediateVar1/100 * 1.5))
+
+      mirror.position.x = (this.heightFrame/10)
+      mirror.position.x = mirror.position.x - intermediateVar2
+
     },
     setFrame2(){
       this.frameIndex = 1
@@ -754,17 +798,17 @@ export default {
       let height = this.heightFrame/10
 
       let  shape2 = new THREE.Shape();
-
-      shape2.moveTo( -1-height,-0.8 );
-      shape2.lineTo( -1-height, 0.8 );
-      shape2.lineTo( -0.95-height, 0.9 );
-      shape2.lineTo( -0.9-height, 0.95 );
-      shape2.lineTo( -1-height, 1 );
-      shape2.lineTo( 1.5, 1 );
-      shape2.lineTo( 1.5, -1 );
-      shape2.lineTo( -0.8-height, -1 );
-      shape2.lineTo( -0.9-height, -0.95 );
-      shape2.lineTo( -0.95-height, -0.9 );
+      let width = Math.abs(this.widthFrame/100 - 0.7)
+      shape2.moveTo( 1-height,-0.8+width );
+      shape2.lineTo( 1-height, 0.8-width );
+      shape2.lineTo( 1.05-height, 0.9-width );
+      shape2.lineTo( 1.1-height, 0.95-width );
+      shape2.lineTo( 1.15-height, 1-width );
+      shape2.lineTo( 1.5, 1-width );
+      shape2.lineTo( 1.5, -1+width );
+      shape2.lineTo( 1.15-height, -1+width );
+      shape2.lineTo( 1.1-height, -0.95+width );
+      shape2.lineTo( 1.05-height, -0.9+width );
 
       const geometry2 = new THREE.ExtrudeGeometry( shape2, extrudeSettings2 );
 

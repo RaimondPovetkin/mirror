@@ -122,7 +122,7 @@ export default {
   z-index: 10;
 }
 .button-home:hover{
-cursor: pointer;
+  cursor: url('../assets/frames/pointer.png'),pointer;
 /* color: white;
 background-color: #231f20; */
 color: #231f20;

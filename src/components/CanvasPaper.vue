@@ -1242,6 +1242,7 @@ export default {
 .select-frame-btn:hover{
   background-color: white !important;
   color: #231f20 !important;
+  cursor: url('../assets/frames/pointer.png'),pointer;
 }
 .mainWrap{
   overflow-x: hidden;
@@ -1287,6 +1288,9 @@ export default {
   letter-spacing: 3px;
   width: 280px;
   height: 40px;
+}
+.btn-tool:hover{
+  cursor: url('../assets/frames/pointer.png'),pointer;
 }
 .btn-tool:disabled{
   color: #ab9fa2;
