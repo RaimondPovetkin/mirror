@@ -28,6 +28,22 @@
               <label for="height" class="smoothing-label">Ширина</label>
               <input v-model="widthFrame" ref="rate" @input="inputWidth" type="range" id="width" min="0" max="70">
             </div>
+
+
+            <div v-if="frameIndex == 0 || frameIndex == 2" style="display: flex; flex-direction: column; margin-top: 20px; align-items: center">
+              <label for="height" class="smoothing-label" style="margin-bottom: 10px">Цвет</label>
+              <div style="display: flex; flex-direction: column">
+                <div style="display: flex">
+                  <el-button @click="setColor('treeD',)" style="background-color: #a37856; border-radius: 20px"></el-button>
+                  <el-button @click="setColor('treeDO')" style="background-color: #c97d3f; border-radius: 20px"></el-button>
+                  <el-button @click="setColor('treeDB')" style="background-color: #683323; border-radius: 20px"></el-button>
+                </div>
+                <div style="display: flex; justify-content: center;">
+                  <el-button @click="setColor('treeDR')" style="background-color: #9a3b3b; border-radius: 20px"></el-button>
+                  <el-button @click="setColor('treeDW')" style="background-color: #deb387; border-radius: 20px"></el-button>
+                </div>
+              </div>
+            </div>
           </div>
 
 
@@ -103,6 +119,7 @@ export default {
   data() {
     return {
       frameIndex:0,
+      currentColor:'treeD',
       sleep:false,
 
       widthFrame:5,
@@ -178,6 +195,56 @@ export default {
     },
   },
   methods: {
+    setColor(name){
+      this.currentColor=name
+      if(this.frameIndex == 2){
+        let frame3 = scene.children.find(i=>i.name=="frame3")
+
+        const loader = new THREE.TextureLoader();
+        let textureFrame = loader.load('../../Texture/'+name+'.jpg')
+        textureFrame.wrapS = textureFrame.wrapT = THREE.RepeatWrapping;
+        textureFrame.repeat.set( 1 / 20, 1 / 10 );
+        textureFrame.offset.set( 0.1, 0.1 );
+        textureFrame.rotation = 1.55;
+
+        let textureFrame1 = loader.load('../../Texture/'+name+'.jpg')
+        textureFrame1.wrapS = textureFrame1.wrapT = THREE.RepeatWrapping;
+        textureFrame1.repeat.set( 1 / 20, 1 / 10 );
+        textureFrame1.offset.set( 0.1, 0.01 );
+        textureFrame1.rotation = 0;
+
+        let materials = [
+          new THREE.MeshPhongMaterial( { map: textureFrame} ),
+          new THREE.MeshPhongMaterial( { map: textureFrame1} )
+        ]
+        frame3.material = materials
+      }
+      else if(this.frameIndex == 0){
+        let frame1 = scene.children.find(i=>i.name=="frame1")
+
+        const loader = new THREE.TextureLoader();
+        let textureFrame = loader.load('../../Texture/'+name+'.jpg')
+        textureFrame.wrapS = textureFrame.wrapT = THREE.RepeatWrapping;
+        textureFrame.repeat.set( 1 / 20, 1 / 10 );
+        textureFrame.offset.set( 0.1, 0.1 );
+        textureFrame.rotation = 1.55;
+
+        let textureFrame1 = loader.load('../../Texture/'+name+'.jpg')
+        textureFrame1.wrapS = textureFrame1.wrapT = THREE.RepeatWrapping;
+        textureFrame1.repeat.set( 1 / 20, 1 / 10 );
+        textureFrame1.offset.set( 0.1, 0.01 );
+        textureFrame1.rotation = 0;
+
+        let materials = [
+          new THREE.MeshPhongMaterial( { map: textureFrame} ),
+          new THREE.MeshPhongMaterial( { map: textureFrame1} )
+        ]
+        frame1.material = materials
+      }
+
+
+
+    },
     setTimeOut(){
       if(!this.sleep){
         this.sleep = true
@@ -702,13 +769,13 @@ export default {
         bevelEnabled: false,  // Don't bevel the edges
       });
 
-      let textureFrame = loader.load('../../Texture/treeD.jpg')
+      let textureFrame = loader.load('../../Texture/'+this.currentColor+'.jpg')
       textureFrame.wrapS = textureFrame.wrapT = THREE.RepeatWrapping;
       textureFrame.repeat.set( 1 / 20, 1 / 10 );
       textureFrame.offset.set( 0.1, 0.1 );
       textureFrame.rotation = 1.55;
 
-      let textureFrame1 = loader.load('../../Texture/treeD.jpg')
+      let textureFrame1 = loader.load('../../Texture/'+this.currentColor+'.jpg')
       textureFrame1.wrapS = textureFrame1.wrapT = THREE.RepeatWrapping;
       textureFrame1.repeat.set( 1 / 20, 1 / 10 );
       textureFrame1.offset.set( 0.1, 0.01 );
@@ -760,13 +827,13 @@ export default {
       this.frameIndex = 2
 
       const loader = new THREE.TextureLoader();
-      let textureFrame = loader.load('../../Texture/treeD.jpg')
+      let textureFrame = loader.load('../../Texture/'+this.currentColor+'.jpg')
       textureFrame.wrapS = textureFrame.wrapT = THREE.RepeatWrapping;
       textureFrame.repeat.set( 1 / 20, 1 / 10 );
       textureFrame.offset.set( 0.1, 0.1 );
       textureFrame.rotation = 1.55;
 
-      let textureFrame1 = loader.load('../../Texture/treeD.jpg')
+      let textureFrame1 = loader.load('../../Texture/'+this.currentColor+'.jpg')
       textureFrame1.wrapS = textureFrame1.wrapT = THREE.RepeatWrapping;
       textureFrame1.repeat.set( 1 / 20, 1 / 10 );
       textureFrame1.offset.set( 0.1, 0.01 );
